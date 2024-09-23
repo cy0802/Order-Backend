@@ -11,17 +11,18 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Option_Type.belongsTo(models.Product, {
-        foreignKey: 'product_id'
-      });
       Option_Type.hasMany(models.Option, {
         foreignKey: 'option_type_id'
+      });
+      Option_Type.belongsToMany(models.Product, {
+        through: 'Product_Option_Type',
+        foreignKey: 'option_type_id',
+        otherKey: 'product_id'
       });
     }
   }
   Option_Type.init({
     name: DataTypes.STRING,
-    product_id: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Option_Type',

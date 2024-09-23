@@ -11,12 +11,6 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Product_Option_Type.belongsTo(models.Product, {
-        foreignKey: 'product_id'
-      });
-      Product_Option_Type.belongsTo(models.Option_Type, {
-        foreignKey: 'option_type_id'
-      });
     }
   }
   Product_Option_Type.init({
