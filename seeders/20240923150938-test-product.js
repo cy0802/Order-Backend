@@ -14,23 +14,32 @@ module.exports = {
     */
     await queryInterface.bulkInsert('Products', [
       { name: '王品牛小排', price: 1600, available: true, category_id: 1, createdAt: new Date(), updatedAt: new Date() },
-      { name: '黑松露紐約客牛排', price: 1800, available: true, category_id: 1, createdAt: new Date(), updatedAt: new Date() }
+      { name: '黑松露紐約客牛排', price: 1800, available: true, category_id: 1, createdAt: new Date(), updatedAt: new Date() },
+      { name: '香煎鴨腿佐羅美沙拉', price: 228, available: true, category_id: 2, createdAt: new Date(), updatedAt: new Date() },
+      { name: '西瓜雪酪水果沙拉', price: 198, available: true, category_id: 2, createdAt: new Date(), updatedAt: new Date()}
     ], {});
     await queryInterface.bulkInsert('Categories', [
-      { name: '牛排', createdAt: new Date(), updatedAt: new Date() }
+      { name: '主餐', createdAt: new Date(), updatedAt: new Date() },
+      { name: '沙拉', createdAt: new Date(), updatedAt: new Date() },
     ], {});
     await queryInterface.bulkInsert('Options', [
       { name: '三分熟', price: 0, option_type_id: 1, createdAt: new Date(), updatedAt: new Date() },
       { name: '五分熟', price: 0, option_type_id: 1, createdAt: new Date(), updatedAt: new Date() },
       { name: '七分熟', price: 0, option_type_id: 1, createdAt: new Date(), updatedAt: new Date() },
-      { name: '全熟', price: 0, option_type_id: 1, createdAt: new Date(), updatedAt: new Date() }
+      { name: '全熟', price: 0, option_type_id: 1, createdAt: new Date(), updatedAt: new Date() },
+      { name: '紅玉冷泡茶(冰)', price: 0, option_type_id: 2, createdAt: new Date(), updatedAt: new Date() },
+      { name: '鮮榨果汁(冰)', price: 0, option_type_id: 2, createdAt: new Date(), updatedAt: new Date() },
+      { name: '冰釀咖啡(冰)', price: 0, option_type_id: 2, createdAt: new Date(), updatedAt: new Date() },
     ], {});
     await queryInterface.bulkInsert('Option_Types', [
-      { name: '熟度', createdAt: new Date(), updatedAt: new Date() }
+      { name: '熟度', createdAt: new Date(), updatedAt: new Date() },
+      { name: "飲料", createdAt: new Date(), updatedAt: new Date() }
     ], {});
     await queryInterface.bulkInsert('Product_Option_Types', [
       { product_id: 1, option_type_id: 1, createdAt: new Date(), updatedAt: new Date() },
-      { product_id: 2, option_type_id: 1, createdAt: new Date(), updatedAt: new Date() }
+      { product_id: 2, option_type_id: 1, createdAt: new Date(), updatedAt: new Date() },
+      { product_id: 1, option_type_id: 2, createdAt: new Date(), updatedAt: new Date() },
+      { product_id: 2, option_type_id: 2, createdAt: new Date(), updatedAt: new Date() },
     ], {});
   },
 
