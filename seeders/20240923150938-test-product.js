@@ -13,7 +13,9 @@ module.exports = {
      * }], {});
     */
     await queryInterface.bulkInsert('Products', [
-      { name: '王品牛小排', price: 1600, available: true, category_id: 1, createdAt: new Date(), updatedAt: new Date() },
+      { name: '王品牛小排', price: 1600, available: true, category_id: 1, createdAt: new Date(), updatedAt: new Date(),
+        description: '王品獨具中式口味的牛小排，以特殊佐料醃浸兩天兩夜，再以 250°C 慢火烘烤一小時，盛裝於高溫瓷盤，保持牛排的香嫩風味。'
+       },
       { name: '黑松露紐約客牛排', price: 1800, available: true, category_id: 1, createdAt: new Date(), updatedAt: new Date() },
       { name: '香煎鴨腿佐羅美沙拉', price: 228, available: true, category_id: 2, createdAt: new Date(), updatedAt: new Date() },
       { name: '西瓜雪酪水果沙拉', price: 198, available: true, category_id: 2, createdAt: new Date(), updatedAt: new Date()}

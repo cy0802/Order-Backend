@@ -28,7 +28,58 @@ async function getProducts(_, res) {
         [Category, 'id', 'ASC']
       ]
     });
-    res.json(products);
+
+    const groupedByCategory = products.reduce((acc, product) => {
+      const { id, name } = product.Category;  // Extract category info
+      const categoryId = id;
+
+      // Check if this category already exists in the accumulator
+      if (!acc[categoryId]) {
+        acc[categoryId] = {
+          category_id: categoryId,
+          category: name,
+          products: [],
+        };
+      }
+
+      // Add the product to the corresponding category
+      acc[categoryId].products.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        description: product.description,
+        options: product.Option_Types.map(optionType => ({
+          id: optionType.id,
+          name: optionType.name,
+          options: optionType.Options.map(option => ({
+            id: option.id,
+            name: option.name,
+            price: option.price,
+          })),
+        })),
+      });
+      return acc;
+    }, {});
+    const result = Object.values(groupedByCategory);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+async function createProduct(req, res) {
+  try {
+    const name = req.body.name;
+    const productExists = await Product.findOne({ where: { name } });
+    if (productExists) {
+      return res.status(400).json({ message: 'Product with the same name already exists' });
+    }
+    const description = req.body.description;
+    const price = req.body.price;
+    const category_id = req.body.category_id;
+    // TODO: nested request?
+    const product = await Product.create(req.body);
+    res.status(201).json(product);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -36,4 +87,5 @@ async function getProducts(_, res) {
 
 module.exports = {
   getProducts,
+  createProduct
 };
