@@ -50,4 +50,37 @@ async function getOrders(req, res) {
   }
 }
 
-module.exports = { getOrders };
+async function addOrder(req, res) {
+  const { user_id, order_items } = req.body;
+  const handler_id = req.body.handler_id || null;
+  const paid = 0;
+  const served = 0;
+  try {
+    const order = await Order.create({ user_id, handler_id, paid, price: 0 });
+    const orderItems = await Order_Item.bulkCreate(order_items.map(item => ({ ...item, order_id: order.id, served })));
+
+    const productIds = orderItems.map(item => item.product_id);
+    const products = await Product.findAll({
+      where: {
+        id: productIds
+      },
+      attributes: ['id', 'price']
+    });
+
+    const prices = orderItems.map(item => {
+      const product = products.find(p => p.id === item.product_id);
+      return product.price * item.number;
+    });
+
+    order.price = prices.reduce((acc, price) => acc + price, 0);
+    await order.save();
+    res.status(201).send({ message: 'Order created successfully' });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+}
+
+module.exports = { 
+  getOrders,
+  addOrder
+};

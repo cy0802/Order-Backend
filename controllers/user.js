@@ -8,8 +8,11 @@ async function login(req, res) {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
         const token = user.generateToken();
-        res.json({ token });
+        const userAttributes = user.get({ plain: true });
+        const { password: _, createdAt, updatedAt, ...userWithoutPassword } = userAttributes;
+        res.json({ token, ...userWithoutPassword });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ error: 'Server error' });
     }
 }

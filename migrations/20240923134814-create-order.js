@@ -24,7 +24,7 @@ module.exports = {
       },
       handler_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: true
       },
       createdAt: {
         allowNull: false,

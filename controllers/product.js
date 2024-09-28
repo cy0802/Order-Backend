@@ -67,25 +67,25 @@ async function getProducts(_, res) {
   }
 }
 
-async function createProduct(req, res) {
-  try {
-    const name = req.body.name;
-    const productExists = await Product.findOne({ where: { name } });
-    if (productExists) {
-      return res.status(400).json({ message: 'Product with the same name already exists' });
-    }
-    const description = req.body.description;
-    const price = req.body.price;
-    const category_id = req.body.category_id;
-    // TODO: nested request?
-    const product = await Product.create(req.body);
-    res.status(201).json(product);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-}
+// async function createProduct(req, res) {
+//   try {
+//     const name = req.body.name;
+//     const productExists = await Product.findOne({ where: { name } });
+//     if (productExists) {
+//       return res.status(400).json({ message: 'Product with the same name already exists' });
+//     }
+//     const description = req.body.description;
+//     const price = req.body.price;
+//     const category_id = req.body.category_id;
+//     // TODO: nested request?
+//     const product = await Product.create(req.body);
+//     res.status(201).json(product);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// }
 
 module.exports = {
   getProducts,
-  createProduct
+  // createProduct
 };

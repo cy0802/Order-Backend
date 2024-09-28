@@ -4,7 +4,7 @@ const bodyParder = require('body-parser');
 const productController = require('./controllers/product');
 const orderController = require('./controllers/order');
 const userController = require('./controllers/user');
-// const auth = require('./middleware/auth');
+const auth = require('./middleware/auth');
 require('dotenv').config();
 const app = express();
 const port = 8000;
@@ -17,6 +17,7 @@ app.get('/', (req, res) => { res.send('Hello World!');});
 app.get('/api/products', productController.getProducts);
 // app.post('/api/products', auth, productController.addProduct);
 app.get('/api/orders', orderController.getOrders);
+app.post('/api/orders', auth, orderController.addOrder);
 
 app.post('/api/register', userController.register);
 app.post('/api/login', userController.login);
