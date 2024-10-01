@@ -1,10 +1,63 @@
 const db = require('../models');
+const jwt = require('jsonwebtoken');
 
 const Order = db.Order;
 const Order_Item = db.Order_Item;
 const Product = db.Product;
 const Option = db.Option;
 const User = db.User;
+
+
+async function getHistory(req, res) {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user_id = decoded.id;
+
+    const orders = await Order.findAll({
+      where: {
+        user_id: user_id,
+      },
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'admin'] },
+        },
+        {
+          model: User,
+          as: 'handler',
+          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'admin'] },
+        },
+        {
+          model: Order_Item,
+          attributes: { exclude: ['createdAt', 'updatedAt'] },
+          include: [
+            {
+              model: Product,
+              attributes: { exclude: ['createdAt', 'updatedAt', 'description', 'available'] },
+            },
+            {
+              model: Option,
+              attributes: { exclude: ['createdAt', 'updatedAt', 'option_type_id'] },
+              through: { attributes: [] },
+              include: [
+                {
+                  model: db.Option_Type,
+                  attributes: { exclude: ['createdAt', 'updatedAt'] },
+                },
+              ],
+            }
+          ],
+        },
+      ],
+    });
+    res.status(200).send(orders);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+}
 
 async function getOrders(req, res) {
   try {
@@ -82,5 +135,6 @@ async function addOrder(req, res) {
 
 module.exports = { 
   getOrders,
-  addOrder
+  addOrder,
+  getHistory,
 };
