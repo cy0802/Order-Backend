@@ -27,8 +27,8 @@ module.exports = (sequelize, DataTypes) => {
   Order_Product.init({
     order_id: DataTypes.INTEGER,
     product_id: DataTypes.INTEGER,
-    number: DataTypes.INTEGER,
-    served: DataTypes.BOOLEAN
+    quantity: DataTypes.INTEGER,
+    serve_state: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'Order_Product',

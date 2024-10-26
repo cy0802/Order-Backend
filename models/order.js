@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'handler_id',
         as: 'handler'
       });
-      Order.hasMany(models.Order_Item, {
+      Order.hasMany(models.Order_Product, {
         foreignKey: 'order_id'
       });
       Order.belongsTo(models.Table, {
@@ -29,8 +29,10 @@ module.exports = (sequelize, DataTypes) => {
   }
   Order.init({
     user_id: DataTypes.INTEGER,
+    table_id: DataTypes.INTEGER,
     price: DataTypes.INTEGER,
-    paid: DataTypes.BOOLEAN,
+    paid_state: DataTypes.BOOLEAN,
+    serve_state: DataTypes.BOOLEAN,
     handler_id: {
       type: DataTypes.INTEGER,
       allowNull: true
