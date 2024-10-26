@@ -2,7 +2,7 @@ const db = require('../models');
 const jwt = require('jsonwebtoken');
 
 const Order = db.Order;
-const Order_Item = db.Order_Item;
+const Order_Product = db.Order_Product;
 const Product = db.Product;
 const Option = db.Option;
 const User = db.User;
@@ -31,7 +31,7 @@ async function getHistory(req, res) {
           attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'admin'] },
         },
         {
-          model: Order_Item,
+          model: Order_Product,
           attributes: { exclude: ['createdAt', 'updatedAt'] },
           include: [
             {
@@ -75,7 +75,7 @@ async function getOrders(req, res) {
           attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'admin'] },
         },
         {
-          model: Order_Item,
+          model: Order_Product,
           attributes: { exclude: ['createdAt', 'updatedAt'] },
           include: [
             {
@@ -104,15 +104,19 @@ async function getOrders(req, res) {
 }
 
 async function addOrder(req, res) {
-  const { user_id, order_items } = req.body;
+  const { user_id, order_items, table_id } = req.body;
   const handler_id = req.body.handler_id || null;
-  const paid = 0;
-  const served = 0;
+  const paid_state = 0;
+  const serve_state = 0;
   try {
-    const order = await Order.create({ user_id, handler_id, paid, price: 0 });
-    const orderItems = await Order_Item.bulkCreate(order_items.map(item => ({ ...item, order_id: order.id, served })));
+    const order = await Order.create({ user_id, handler_id, table_id, paid_state, serve_state, price: 0 });
+    const orderProducts = await Order_Product.bulkCreate(
+      order_items.map(
+        item => ({ ...item, order_id: order.id })
+      )
+    );
 
-    const productIds = orderItems.map(item => item.product_id);
+    const productIds = orderProducts.map(item => item.product_id);
     const products = await Product.findAll({
       where: {
         id: productIds
@@ -120,9 +124,9 @@ async function addOrder(req, res) {
       attributes: ['id', 'price']
     });
 
-    const prices = orderItems.map(item => {
+    const prices = orderProducts.map(item => {
       const product = products.find(p => p.id === item.product_id);
-      return product.price * item.number;
+      return product.price * item.quantity;
     });
 
     order.price = prices.reduce((acc, price) => acc + price, 0);
