@@ -17,7 +17,7 @@ app.get('/', (req, res) => { res.send('Hello World!');});
 app.get('/api/products', productController.getProducts);
 // app.post('/api/products', auth, productController.addProduct);
 app.get('/api/orders', orderController.getOrders);
-app.post('/api/orders', auth, orderController.addOrder);
+app.post('/api/orders', orderController.addOrder);
 app.get('/api/orders/history', auth, orderController.getHistory);
 
 app.post('/api/register', userController.register);

@@ -104,7 +104,8 @@ async function getOrders(req, res) {
 }
 
 async function addOrder(req, res) {
-  const { user_id, order_items, table_id } = req.body;
+  const { order_items, table_id } = req.body;
+  const user_id = req.body.user_id || null;
   const handler_id = req.body.handler_id || null;
   const paid_state = 0;
   const serve_state = 0;
