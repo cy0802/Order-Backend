@@ -8,8 +8,7 @@ async function login(req, res) {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
         const token = user.generateToken();
-        const userAttributes = user.get({ plain: true });
-        const { password: _, createdAt, updatedAt, ...userWithoutPassword } = userAttributes;
+        const userWithoutPassword = removeUserPassword(user);
         res.json({ token, ...userWithoutPassword });
     } catch (error) {
         console.log(error);
@@ -27,10 +26,17 @@ async function register(req, res) {
         }
         const newUser = await User.create({ name, phone, email, password, admin });
         const token = newUser.generateToken();
-        res.status(201).json({ token });
+        const returnedUser = removeUserPassword(newUser);
+        res.status(201).json({ token, ...returnedUser });
     } catch (error) {
         return res.status(500).json({ error: 'Server error' });
     }
+}
+
+function removeUserPassword(user) {
+    const userAttributes = user.get({ plain: true });
+    const { password, createdAt, updatedAt, ...userWithoutPassword } = userAttributes;
+    return userWithoutPassword;
 }
 
 module.exports = { 
