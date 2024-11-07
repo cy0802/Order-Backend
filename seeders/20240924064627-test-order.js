@@ -20,6 +20,15 @@ module.exports = {
       { name: '陳大明', password: passwd, phone: '0923456789', email: 'chen@gmail.com', admin: false, createdAt: new Date(), updatedAt: new Date() },
       { name: '李小美', password: passwd, phone: '0934567890', email: 'maylee@gmail.com', admin: true, createdAt: new Date(), updatedAt: new Date() }
     ])
+    await queryInterface.bulkInsert('Coupons', [
+      { name: '單筆訂單九折', expire: new Date('2025-12-31'), type: 'percent_off', percent_off: 0.9, createdAt: new Date(), updatedAt: new Date() },
+      { name: '折抵100元', expire: new Date('2025-12-31'), type: 'discount', discount: 100, createdAt: new Date(), updatedAt: new Date() }
+    ])
+    await queryInterface.bulkInsert('User_Coupons', [
+      { user_id: 1, coupon_id: 1, createdAt: new Date(), updatedAt: new Date() },
+      { user_id: 1, coupon_id: 2, order_id: 1, createdAt: new Date(), updatedAt: new Date() },
+      { user_id: 2, coupon_id: 2, createdAt: new Date(), updatedAt: new Date() }
+    ])
     await queryInterface.bulkInsert('Tables', [
       { handler_id: 3, createdAt: new Date(), updatedAt: new Date() },
       { handler_id: 3, createdAt: new Date(), updatedAt: new Date() }

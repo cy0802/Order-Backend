@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     order_id: DataTypes.INTEGER,
     product_id: DataTypes.INTEGER,
     quantity: DataTypes.INTEGER,
-    serve_state: DataTypes.BOOLEAN
+    serve_state: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Order_Product',

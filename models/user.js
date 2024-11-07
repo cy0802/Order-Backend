@@ -17,6 +17,11 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Order, {
         foreignKey: 'handler_id'
       });
+      User.belongsToMany(models.Coupon, {
+        through: models.User_Coupon,
+        foreignKey: 'user_id',
+        otherKey: 'coupon_id'
+      });
     }
     
     async validPassword(password) {
