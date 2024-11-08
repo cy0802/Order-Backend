@@ -12,12 +12,12 @@ async function getHistory(req, res) {
   try {
     const token = req.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user_id = decoded.id;
+    const userId = decoded.id;
+    const admin = decoded.admin;
 
+    const whereClause = admin ? {} : { user_id: userId };
     const orders = await Order.findAll({
-      where: {
-        user_id: user_id,
-      },
+      where: whereClause,
       order: [['createdAt', 'DESC']],
       include: [
         {
