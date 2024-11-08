@@ -11,6 +11,12 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      User_Coupon.belongsTo(models.User, {
+        foreignKey: 'user_id'
+      });
+      User_Coupon.belongsTo(models.Coupon, {
+        foreignKey: 'coupon_id'
+      });
     }
   }
   User_Coupon.init({
@@ -19,6 +25,12 @@ module.exports = (sequelize, DataTypes) => {
     order_id: {
       allowNull: true,
       type: DataTypes.INTEGER
+    },
+    used: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.order_id != null;
+      }
     }
   }, {
     sequelize,

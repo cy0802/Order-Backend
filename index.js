@@ -4,6 +4,7 @@ const bodyParder = require('body-parser');
 const productController = require('./controllers/product');
 const orderController = require('./controllers/order');
 const userController = require('./controllers/user');
+const couponController = require('./controllers/coupon');
 const auth = require('./middleware/auth');
 require('dotenv').config();
 const app = express();
@@ -22,6 +23,8 @@ app.get('/api/orders/history', auth, orderController.getHistory);
 
 app.post('/api/register', userController.register);
 app.post('/api/login', userController.login);
+
+app.get('/api/coupons', auth, couponController.getCoupons);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

@@ -11,11 +11,6 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Coupon.belongsToMany(models.User, {
-        through: models.User_Coupon,
-        foreignKey: 'coupon_id',
-        otherKey: 'user_id'
-      });
       Coupon.belongsToMany(models.Order, {
         through: models.User_Coupon,
         foreignKey: 'coupon_id',
@@ -34,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     discount: {
       allowNull: true,
       type: DataTypes.INTEGER
-    },
+    }
   }, {
     sequelize,
     modelName: 'Coupon',
