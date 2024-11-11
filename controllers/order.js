@@ -1,3 +1,4 @@
+const { where } = require('sequelize');
 const db = require('../models');
 const jwt = require('jsonwebtoken');
 
@@ -6,7 +7,8 @@ const Order_Product = db.Order_Product;
 const Product = db.Product;
 const Option = db.Option;
 const User = db.User;
-
+const User_Coupon = db.User_Coupon;
+const Coupon = db.Coupon;
 
 async function getHistory(req, res) {
   try {
@@ -104,7 +106,7 @@ async function getOrders(req, res) {
 }
 
 async function addOrder(req, res) {
-  const { order_items, table_id } = req.body;
+  const { order_items, table_id, coupon_ids } = req.body;
   const user_id = req.body.user_id || null;
   const handler_id = req.body.handler_id || null;
   const paid_state = 0;
@@ -132,6 +134,36 @@ async function addOrder(req, res) {
 
     order.price = prices.reduce((acc, price) => acc + price, 0);
     await order.save();
+
+    console.log(coupon_ids);
+
+    for (const id of coupon_ids) {
+      const user_coupon = await User_Coupon.findOne({ where: { user_id: user_id, id: id } });
+      const coupon = await Coupon.findOne({ where: { id: user_coupon.coupon_id } });
+      console.log(user_coupon);
+      console.log(coupon);
+      console.log(order);
+      if (!user_coupon || !coupon) {
+        res.status(400).send({ message: 'Coupon not found' });
+        return;
+      }
+      
+      // user_coupon is not correctly updated
+      // user_coupon.order_id = order.id;
+      // console.log("user_coupon.order_id ", user_coupon.order_id);
+      // await user_coupon.save();
+      await User_Coupon.update(
+        { order_id: order.id },
+        { where: { id: user_coupon.id } }
+      );
+
+      if (coupon.type == 'percent_off' && coupon.percent_off) {
+        order.price = order.price * coupon.percent_off;
+      } else if (coupon.type == 'discount' && coupon.discount) {
+        order.price = order.price - coupon.discount;
+      }
+      await order.save();
+    }
     res.status(201).send({ message: 'Order created successfully' });
   } catch (error) {
     res.status(500).send({ message: error.message });

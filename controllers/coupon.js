@@ -12,7 +12,7 @@ async function getCoupons(req, res) {
 
     const coupons = await User_Coupon.findAll({
       where: { user_id: userId },
-      attributes: ['id', 'used'],
+      attributes: ['id', 'used', 'order_id'],
       include: [
         {
           model: Coupon,
