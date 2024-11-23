@@ -28,7 +28,10 @@ module.exports = (sequelize, DataTypes) => {
     order_id: DataTypes.INTEGER,
     product_id: DataTypes.INTEGER,
     quantity: DataTypes.INTEGER,
-    serve_state: DataTypes.STRING
+    serve_state: {
+      type: DataTypes.STRING,
+      defaultValue: 'pending' // 設定 serve_state 預設值
+    }
   }, {
     sequelize,
     modelName: 'Order_Product',

@@ -15,7 +15,11 @@ module.exports = (sequelize, DataTypes) => {
   }
   Product_Option_Type.init({
     product_id: DataTypes.INTEGER,
-    option_type_id: DataTypes.INTEGER
+    option_type_id: DataTypes.INTEGER,
+    isDelete: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    }
   }, {
     sequelize,
     modelName: 'Product_Option_Type',
