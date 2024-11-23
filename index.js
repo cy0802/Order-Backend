@@ -6,6 +6,7 @@ const orderController = require('./controllers/order');
 const userController = require('./controllers/user');
 const couponController = require('./controllers/coupon');
 const auth = require('./middleware/auth');
+const checkAdmin = require('./middleware/checkAdmin');
 require('dotenv').config();
 const app = express();
 const port = 8000;
@@ -25,6 +26,18 @@ app.post('/api/register', userController.register);
 app.post('/api/login', userController.login);
 
 app.get('/api/coupons', auth, couponController.getCoupons);
+
+// merged from kitchen system
+app.post('/api/admin/orders', orderController.getAdminOrders);
+app.patch('/api/admin/orders/:id', auth, checkAdmin, orderController.updateOrderState);
+app.delete('/api/admin/orders/:id', auth, checkAdmin, orderController.deleteOrder);
+
+app.get('/api/menu-management/show-menu', productController.getMenu);
+app.get('/api/menu-management/get-all-options', productController.getOption);
+app.put('/api/menu-management/update-item/:id', auth, checkAdmin, productController.updateItem);
+
+app.get('/api/charge-page', orderController.getChargePageOrders);
+app.post('/api/charge-page/confirm-charge', auth, checkAdmin, orderController.confirmCharge);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

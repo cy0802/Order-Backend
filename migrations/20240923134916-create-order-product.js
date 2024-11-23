@@ -24,7 +24,7 @@ module.exports = {
       serve_state: {
         type: Sequelize.STRING,
         allowNull: false,
-        defaultValue: false
+        defaultValue: 'pending'
       },
       createdAt: {
         allowNull: false,
