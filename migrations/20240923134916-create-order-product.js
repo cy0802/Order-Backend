@@ -22,7 +22,7 @@ module.exports = {
         allowNull: false
       },
       serve_state: {
-        type: Sequelize.BOOLEAN,
+        type: Sequelize.STRING,
         allowNull: false,
         defaultValue: false
       },
