@@ -33,6 +33,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Order.init({
+    id: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
+    },
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: true
