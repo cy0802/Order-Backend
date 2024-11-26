@@ -19,6 +19,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Coupon.init({
+    id: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
+    },
     name: DataTypes.STRING,
     expire: DataTypes.DATE,
     type: DataTypes.STRING,
