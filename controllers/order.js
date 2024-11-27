@@ -205,7 +205,7 @@ async function getAdminOrders(req, res) {
         {
           model: Order,
           attributes: ['table_id', 'user_id', 'serve_state', 'paid_state'],
-          // where: {paid_state: false}
+          where: {paid_state: false}
         },
         {
           model: Option,
@@ -223,7 +223,7 @@ async function getAdminOrders(req, res) {
         //   through: {attributes:[]},
         // }
       ],
-      attributes: ['id', 'serve_state', 'createdAt'],
+      attributes: ['id', 'serve_state', 'quantity', 'createdAt'],
       where: {
         serve_state: statesArray,
       },
@@ -342,7 +342,7 @@ async function getChargePageOrders(req, res) {
                   }]
               }, 
             ],
-            attributes: ['id', 'serve_state', 'createdAt'],
+            attributes: ['id', 'serve_state', 'quantity', 'createdAt'],
           },
           {
             model: Coupon,
