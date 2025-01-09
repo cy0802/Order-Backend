@@ -1,6 +1,7 @@
 const { where } = require('sequelize');
 const db = require('../models');
 const jwt = require('jsonwebtoken');
+const order_product_option = require('../models/order_product_option');
 
 const Order = db.Order;
 const Order_Product = db.Order_Product;
@@ -10,6 +11,7 @@ const User = db.User;
 const User_Coupon = db.User_Coupon;
 const Coupon = db.Coupon;
 const Option_Type = db.Option_Type;
+const Order_Product_Option = db.Order_Product_Option;
 
 async function getHistory(req, res) {
   try {
@@ -120,6 +122,21 @@ async function addOrder(req, res) {
       )
     );
 
+    const orderProductOption = [];
+    const optionPrices = [];
+    for (const [key, item] of order_items.entries()) {
+      for (const optionId of item.option_ids) {
+        const option = await Option.findOne({ where: { id: optionId } });
+        orderProductOption.push({
+          order_product_id: orderProducts[key].id,
+          option_id: optionId,
+          option_type_id: option.option_type_id
+        });
+        optionPrices.push(option.price);
+      }
+    }
+    await Order_Product_Option.bulkCreate(orderProductOption);
+
     const productIds = orderProducts.map(item => item.product_id);
     const products = await Product.findAll({
       where: {
@@ -134,21 +151,18 @@ async function addOrder(req, res) {
     });
 
     order.price = prices.reduce((acc, price) => acc + price, 0);
+    order.price += optionPrices.reduce((acc, price) => acc + price, 0);
     await order.save();
 
-    console.log(coupon_ids);
 
     for (const id of coupon_ids) {
       const user_coupon = await User_Coupon.findOne({ where: { user_id: user_id, id: id } });
       const coupon = await Coupon.findOne({ where: { id: user_coupon.coupon_id } });
-      console.log(user_coupon);
-      console.log(coupon);
-      console.log(order);
       if (!user_coupon || !coupon) {
         res.status(400).send({ message: 'Coupon not found' });
         return;
       }
-      
+
       // user_coupon is not correctly updated
       // user_coupon.order_id = order.id;
       // console.log("user_coupon.order_id ", user_coupon.order_id);
