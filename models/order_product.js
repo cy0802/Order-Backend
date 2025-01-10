@@ -31,10 +31,10 @@ module.exports = (sequelize, DataTypes) => {
   }
   Order_Product.init({
     id: {
-      allowNull: false,
-      autoIncrement: true,
+      type: DataTypes.INTEGER,
       primaryKey: true,
-      type: DataTypes.INTEGER
+      autoIncrement: true,
+      allowNull: false
     },
     order_id: DataTypes.INTEGER,
     product_id: DataTypes.INTEGER,
