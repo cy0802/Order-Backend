@@ -211,12 +211,17 @@ async function getAdminOrders(req, res) {
           model: Option,
           attributes: ['name'],
           through: {attributes: []},
-          required: true,
+          // required: true,
           include: [{
             model: Option_Type,
             attributes:['name'],
           }]
         },
+        // {
+        //   model: Option_Type,
+        //   attributes: ['name'],
+        //   through: {attributes:[]},
+        // }
       ],
       attributes: ['id', 'serve_state', 'createdAt'],
       where: {
@@ -273,6 +278,7 @@ async function updateOrderState(req, res) {
     console.log('order be modified: ', id);
     order.serve_state = state;
     await order.save();
+    console.log('now serve state is: ', state);
 
     res.status(200).json(order);
   } catch (error) {
@@ -302,6 +308,7 @@ async function deleteOrder(req, res) {
 }
 
 async function getChargePageOrders(req, res) {
+  console.log("get charge page orders");
   try {
     const orders = await Order.findAll({
       include:

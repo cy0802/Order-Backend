@@ -19,14 +19,20 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'option_type_id',
         otherKey: 'product_id'
       });
-      Option_Type.belongsToMany(models.Order_Product, {
-        through: 'Order_Product_Option',
-        foreignKey: 'option_type_id',
-        otherKey: 'order_product_id'
-      });
+      // Option_Type.belongsToMany(models.Order_Product, {
+      //   through: 'Order_Product_Option',
+      //   foreignKey: 'option_type_id',
+      //   otherKey: 'order_product_id'
+      // });
     }
   }
   Option_Type.init({
+    id: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
+    },
     name: DataTypes.STRING,
   }, {
     sequelize,

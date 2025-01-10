@@ -25,6 +25,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Table.init({
+    id: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
+    },
     handler_id: DataTypes.INTEGER
   }, {
     sequelize,
