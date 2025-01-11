@@ -204,6 +204,13 @@ async function getAdminOrders(req, res) {
         },
         {
           model: Order,
+          include: [
+            {
+              model: User,
+              as: 'handler',
+              attributes: ['id', 'name', 'email',]
+            }
+          ],
           attributes: ['table_id', 'user_id', 'serve_state', 'paid_state'],
           where: {paid_state: false}
         },
