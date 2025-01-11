@@ -190,6 +190,13 @@ async function getAdminOrders(req, res) {
         },
         {
           model: Order,
+          include: [
+            {
+              model: User,
+              as: 'handler',
+              attributes: ['id', 'name', 'email',]
+            }
+          ],
           attributes: ['table_id', 'user_id', 'serve_state', 'paid_state'],
           where: {paid_state: false}
         },
@@ -336,7 +343,7 @@ async function getChargePageOrders(req, res) {
             through: {attributes: []},
           }
         ],
-        attributes: ['id', 'serve_state', 'paid_state', 'price'],
+        attributes: ['id', 'table_id', 'serve_state', 'paid_state', 'price'],
     });
 
     console.log(JSON.stringify(orders, null, 2));
