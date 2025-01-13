@@ -157,7 +157,7 @@ async function addOrder(req, res) {
     order.price = prices.reduce((acc, price) => acc + price, 0);
     order.price += optionPrices.reduce((acc, price) => acc + price, 0);
     await order.save();
-
+    
     for (const id of coupon_ids) {
       const user_coupon = await User_Coupon.findOne({ where: { user_id: user_id, id: id } });
       const coupon = await Coupon.findOne({ where: { id: user_coupon.coupon_id } });
@@ -207,6 +207,13 @@ async function getAdminOrders(req, res) {
         },
         {
           model: Order,
+          include: [
+            {
+              model: User,
+              as: 'handler',
+              attributes: ['id', 'name', 'email',]
+            }
+          ],
           attributes: ['table_id', 'user_id', 'serve_state', 'paid_state'],
           where: {paid_state: false}
         },
