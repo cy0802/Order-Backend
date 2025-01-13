@@ -18,9 +18,9 @@ async function getHistory(req, res) {
     const token = req.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
-    const admin = decoded.admin;
+    const permission = decoded.permission;
 
-    const whereClause = admin ? {} : { user_id: userId };
+    const whereClause = (permission === 'admin' || permission === 'clerk') ? {} : { user_id: userId };
     const orders = await Order.findAll({
       where: whereClause,
       order: [['createdAt', 'DESC']],
@@ -28,12 +28,12 @@ async function getHistory(req, res) {
         {
           model: User,
           as: 'user',
-          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'admin'] },
+          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'permission'] },
         },
         {
           model: User,
           as: 'handler',
-          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'admin'] },
+          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'permission'] },
         },
         {
           model: Order_Product,
@@ -72,12 +72,12 @@ async function getOrders(req, res) {
         {
           model: User,
           as: 'user',
-          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'admin'] },
+          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'permission'] },
         },
         {
           model: User,
           as: 'handler',
-          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'admin'] },
+          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'permission'] },
         },
         {
           model: Order_Product,
@@ -127,12 +127,16 @@ async function addOrder(req, res) {
     for (const [key, item] of order_items.entries()) {
       for (const optionId of item.option_ids) {
         const option = await Option.findOne({ where: { id: optionId } });
-        orderProductOption.push({
-          order_product_id: orderProducts[key].id,
-          option_id: optionId,
-          option_type_id: option.option_type_id
-        });
-        optionPrices.push(option.price);
+        if (option) {
+          orderProductOption.push({
+            order_product_id: orderProducts[key].id,
+            option_id: optionId,
+            option_type_id: option.option_type_id
+          });
+          optionPrices.push(option.price);
+        } else {
+          console.log("option not found ", optionId);
+        }
       }
     }
     await Order_Product_Option.bulkCreate(orderProductOption);
@@ -153,8 +157,7 @@ async function addOrder(req, res) {
     order.price = prices.reduce((acc, price) => acc + price, 0);
     order.price += optionPrices.reduce((acc, price) => acc + price, 0);
     await order.save();
-
-
+    
     for (const id of coupon_ids) {
       const user_coupon = await User_Coupon.findOne({ where: { user_id: user_id, id: id } });
       const coupon = await Coupon.findOne({ where: { id: user_coupon.coupon_id } });

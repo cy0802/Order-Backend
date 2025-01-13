@@ -25,10 +25,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
-      admin: {
-        type: Sequelize.BOOLEAN,
+      permission: {
+        type: Sequelize.STRING,
         allowNull: false,
-        defaultValue: false
+        defaultValue: "customer"
       },
       createdAt: {
         allowNull: false,
