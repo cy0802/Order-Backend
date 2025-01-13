@@ -18,13 +18,13 @@ async function login(req, res) {
 
 async function register(req, res) {
   const { email, password, name, phone } = req.body;
-  const admin = 0;
+  const permission = "customer";
   try {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser){
       return res.status(400).json({ error: 'Email already in use' });
     }
-    const newUser = await User.create({ name, phone, email, password, admin });
+    const newUser = await User.create({ name, phone, email, password, permission });
     const token = newUser.generateToken();
     const returnedUser = removeUserPassword(newUser);
     res.status(201).json({ token, ...returnedUser });

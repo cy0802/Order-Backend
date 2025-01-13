@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
         id: this.id,
         name: this.name,
         email: this.email,
-        admin: this.admin
+        permission: this.permission
       }, process.env.JWT_SECRET, { expiresIn: '3h' });
     }
   }
@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     phone: DataTypes.STRING,
     email: DataTypes.STRING,
-    admin: DataTypes.BOOLEAN
+    permission: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'User',
