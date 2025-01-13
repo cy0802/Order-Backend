@@ -6,7 +6,7 @@ const orderController = require('./controllers/order');
 const userController = require('./controllers/user');
 const couponController = require('./controllers/coupon');
 const auth = require('./middleware/auth');
-const checkAdmin = require('./middleware/checkAdmin');
+const { checkAdmin, checkClerk } = require('./middleware/checkAdmin');
 require('dotenv').config();
 const app = express();
 const port = 8000;
@@ -28,6 +28,7 @@ app.post('/api/login', userController.login);
 app.get('/api/coupons', auth, couponController.getCoupons);
 
 // merged from kitchen system
+// !!!!!!! checkAdmin middleware is modified to checkClerk !!!!!!!
 app.post('/api/admin/orders', orderController.getAdminOrders);
 app.patch('/api/admin/orders/:id', auth, checkAdmin, orderController.updateOrderState);
 app.delete('/api/admin/orders/:id', auth, checkAdmin, orderController.deleteOrder);

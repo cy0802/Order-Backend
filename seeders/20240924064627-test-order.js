@@ -16,9 +16,10 @@ module.exports = {
     */
     const passwd = await bcrypt.hash('hi', process.env.JWT_SECRET)
     await queryInterface.bulkInsert('Users', [
-      { name: '王曉明', password: passwd, phone: '0912345678', email: 'mingming@gmail.com', admin: false, createdAt: new Date(), updatedAt: new Date() },
-      { name: '陳大明', password: passwd, phone: '0923456789', email: 'chen@gmail.com', admin: false, createdAt: new Date(), updatedAt: new Date() },
-      { name: '李小美', password: passwd, phone: '0934567890', email: 'maylee@gmail.com', admin: true, createdAt: new Date(), updatedAt: new Date() }
+      { name: 'customer1', password: passwd, phone: '0912345678', email: 'customer1@gmail.com', permission: "customer", createdAt: new Date(), updatedAt: new Date() },
+      { name: 'customer2', password: passwd, phone: '0923456789', email: 'customer2@gmail.com', permission: "customer", createdAt: new Date(), updatedAt: new Date() },
+      { name: 'clerk', password: passwd, phone: '0934567890', email: 'clerk@gmail.com', permission: "clerk", createdAt: new Date(), updatedAt: new Date() },
+      { name: 'admin', password: passwd, phone: '0934567890', email: 'admin@gmail.com', permission: "admin", createdAt: new Date(), updatedAt: new Date() },
     ])
     await queryInterface.bulkInsert('Coupons', [
       { name: '單筆訂單九折', expire: new Date('2025-12-31'), type: 'percent_off', percent_off: 0.9, createdAt: new Date(), updatedAt: new Date() },
