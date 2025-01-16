@@ -17,8 +17,7 @@ app.use(bodyParder.json());
 app.get('/', (req, res) => { res.send('Hello World!');});
 
 app.get('/api/products', productController.getProducts);
-// app.post('/api/products', auth, productController.addProduct);
-app.get('/api/orders', orderController.getOrders);
+
 app.post('/api/orders', orderController.addOrder);
 app.get('/api/orders/history', auth, orderController.getHistory);
 
@@ -40,6 +39,8 @@ app.put('/api/menu-management/update-item/:id', auth, checkAdmin, productControl
 app.get('/api/charge-page', orderController.getChargePageOrders);
 app.post('/api/charge-page/confirm-charge', auth, checkAdmin, orderController.confirmCharge);
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+module.exports = server;
