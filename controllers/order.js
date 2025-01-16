@@ -1,7 +1,5 @@
-const { where } = require('sequelize');
 const db = require('../models');
 const jwt = require('jsonwebtoken');
-const order_product_option = require('../models/order_product_option');
 
 const Order = db.Order;
 const Order_Product = db.Order_Product;
@@ -42,50 +40,6 @@ async function getHistory(req, res) {
             {
               model: Product,
               attributes: { exclude: ['createdAt', 'updatedAt', 'description', 'available'] },
-            },
-            {
-              model: Option,
-              attributes: { exclude: ['createdAt', 'updatedAt', 'option_type_id'] },
-              through: { attributes: [] },
-              include: [
-                {
-                  model: db.Option_Type,
-                  attributes: { exclude: ['createdAt', 'updatedAt'] },
-                },
-              ],
-            }
-          ],
-        },
-      ],
-    });
-    res.status(200).send(orders);
-  } catch (error) {
-    res.status(500).send({ message: error.message });
-  }
-}
-
-async function getOrders(req, res) {
-  try {
-    const orders = await Order.findAll({
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
-      include: [
-        {
-          model: User,
-          as: 'user',
-          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'permission'] },
-        },
-        {
-          model: User,
-          as: 'handler',
-          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'permission'] },
-        },
-        {
-          model: Order_Product,
-          attributes: { exclude: ['createdAt', 'updatedAt'] },
-          include: [
-            {
-              model: Product,
-              attributes: { exclude: ['createdAt', 'updatedAt'] },
             },
             {
               model: Option,
@@ -393,9 +347,7 @@ async function confirmCharge(req, res) {
   }
 }
 
-
 module.exports = { 
-  getOrders,
   addOrder,
   getHistory,
   getAdminOrders,
