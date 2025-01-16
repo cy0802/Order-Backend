@@ -39,7 +39,7 @@ module.exports = {
       { user_id: 2, table_id: 2, createdAt: new Date(), updatedAt: new Date() }
     ])
     await queryInterface.bulkInsert('Orders', [
-      { table_id: 1, user_id: 1, serve_state: false, price: 1828, paid_state: false, handler_id: 3, createdAt: new Date(), updatedAt: new Date() },
+      { table_id: 4, user_id: 1, serve_state: false, price: 1828, paid_state: false, handler_id: 3, createdAt: new Date(), updatedAt: new Date() },
       { table_id: 2, user_id: 2, serve_state: true,  price: 1998, paid_state: false, handler_id: 3, createdAt: new Date(), updatedAt: new Date() },
     ])
     await queryInterface.bulkInsert('Order_Products', [

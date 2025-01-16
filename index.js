@@ -40,6 +40,8 @@ app.put('/api/menu-management/add-new-product', auth, checkAdmin, productControl
 app.get('/api/charge-page', orderController.getChargePageOrders);
 app.post('/api/charge-page/confirm-charge', auth, checkAdmin, orderController.confirmCharge);
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+module.exports = server;
