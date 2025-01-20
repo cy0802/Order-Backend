@@ -200,6 +200,36 @@ async function updateItem(req, res) {
   }
 }
 
+async function addNewProduct(req, res) {
+  const product = req.body;
+  console.log('addNewProduct: ');
+  console.log(product);
+  // return res.ststus(500).json({error: 'add new product is not implimented'});
+
+  try {
+    const newProduct = await Product.create({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      available: product.available,
+      category_id: product.category,
+    });
+
+    for(const option_type of product.options) {
+      await Product_Option_Type.create({
+        product_id: newProduct.id,
+        option_type_id: option_type,
+      });
+      res.status(201).json({
+        message: 'Product created successfully',
+        productId: newProduct.product_id,
+      });
+    }
+  } catch (error) {
+    console.error('Error creating product:', error);
+    res.status(500).json({ error: 'Failed to create product' });
+  }
+}
 
 module.exports = {
   getProducts,
@@ -207,4 +237,5 @@ module.exports = {
   getMenu,
   getOption,
   updateItem,
+  addNewProduct,
 };

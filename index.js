@@ -35,6 +35,7 @@ app.delete('/api/admin/orders/:id', auth, checkAdmin, orderController.deleteOrde
 app.get('/api/menu-management/show-menu', productController.getMenu);
 app.get('/api/menu-management/get-all-options', productController.getOption);
 app.put('/api/menu-management/update-item/:id', auth, checkAdmin, productController.updateItem);
+app.put('/api/menu-management/add-new-product', auth, checkAdmin, productController.addNewProduct);
 
 app.get('/api/charge-page', orderController.getChargePageOrders);
 app.post('/api/charge-page/confirm-charge', auth, checkAdmin, orderController.confirmCharge);
