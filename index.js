@@ -36,6 +36,8 @@ app.get('/api/menu-management/show-menu', productController.getMenu);
 app.get('/api/menu-management/get-all-options', productController.getOption);
 app.put('/api/menu-management/update-item/:id', auth, checkAdmin, productController.updateItem);
 app.put('/api/menu-management/add-new-product', auth, checkAdmin, productController.addNewProduct);
+app.put('/api/menu-management/add-new-category', auth, checkAdmin, productController.addNewCategory);
+app.put('/api/menu-management/add-new-option-type', productController.addNewOptionType);
 
 app.get('/api/charge-page', orderController.getChargePageOrders);
 app.post('/api/charge-page/confirm-charge', auth, checkAdmin, orderController.confirmCharge);
