@@ -231,6 +231,46 @@ async function addNewProduct(req, res) {
   }
 }
 
+async function addNewCategory(req, res) {
+  const category = req.body;
+  console.log('add new category: ', category);
+  try {
+    await Category.create({name: category.category});
+    res.status(201).json({
+      message: 'Category created successfully',
+      // productId: newProduct.product_id,
+    });
+  } catch (error) {
+    console.error('Error creating category:', error);
+    res.status(500).json({ error: 'Failed to create category' });
+  }
+}
+
+async function addNewOptionType(req, res) {
+  console.log("add new option type: ");
+  const optionType = req.body;
+  console.log(optionType);
+
+  try {
+    const newOptionType = await Option_Type.create({name: optionType.optionType});
+    for (const option of optionType.options) {
+      await Option.create({
+        name: option.name,
+        option_type_id: newOptionType.id,
+        price: option.price,
+      });
+    }
+    res.status(201).json({
+      message: 'Option type created successfully',
+      // productId: newProduct.product_id,
+    });
+  } catch (error) {
+    console.error('Error creating option type:', error);
+    res.status(500).json({ error: 'Failed to create option type' });
+  }
+  // res.status(500).json({error: 'add new option not impliment'});
+}
+
 module.exports = {
   getProducts,
   // createProduct
@@ -238,4 +278,6 @@ module.exports = {
   getOption,
   updateItem,
   addNewProduct,
+  addNewCategory,
+  addNewOptionType,
 };

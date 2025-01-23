@@ -29,16 +29,18 @@ app.get('/api/coupons', auth, couponController.getCoupons);
 // merged from kitchen system
 // !!!!!!! checkAdmin middleware is modified to checkClerk !!!!!!!
 app.post('/api/admin/orders', orderController.getAdminOrders);
-app.patch('/api/admin/orders/:id', auth, checkAdmin, orderController.updateOrderState);
-app.delete('/api/admin/orders/:id', auth, checkAdmin, orderController.deleteOrder);
+app.patch('/api/admin/orders/:id', auth, checkClerk, orderController.updateOrderState);
+app.delete('/api/admin/orders/:id', auth, checkClerk, orderController.deleteOrder);
 
 app.get('/api/menu-management/show-menu', productController.getMenu);
 app.get('/api/menu-management/get-all-options', productController.getOption);
-app.put('/api/menu-management/update-item/:id', auth, checkAdmin, productController.updateItem);
+app.put('/api/menu-management/update-item/:id', productController.updateItem);
 app.put('/api/menu-management/add-new-product', auth, checkAdmin, productController.addNewProduct);
+app.put('/api/menu-management/add-new-category', auth, checkAdmin, productController.addNewCategory);
+app.put('/api/menu-management/add-new-option-type', auth, checkAdmin, productController.addNewOptionType);
 
 app.get('/api/charge-page', orderController.getChargePageOrders);
-app.post('/api/charge-page/confirm-charge', auth, checkAdmin, orderController.confirmCharge);
+app.post('/api/charge-page/confirm-charge', auth, checkClerk, orderController.confirmCharge);
 
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
