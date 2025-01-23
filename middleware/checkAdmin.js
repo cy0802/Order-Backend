@@ -1,5 +1,7 @@
 const checkAdmin = (req, res, next) => {
-  if (!req.user || req.user.admin !== "admin") {
+  console.log("require user:");
+  // console.log(req.user);
+  if (!req.user || req.user.permission !== "admin") {
     console.log("Admin access required");
     return res.status(403).json({ error: 'Permission Denied' });
   }
@@ -7,7 +9,7 @@ const checkAdmin = (req, res, next) => {
 };
 
 const checkClerk = (req, res, next) => {
-  if (!req.user || req.user.admin !== "clerk") {
+  if (!req.user || (req.user.permission !== "clerk" && req.user.permission != "admin")) {
     console.log("Clerk access required");
     return res.status(403).json({ error: 'Permission Denied' });
   }

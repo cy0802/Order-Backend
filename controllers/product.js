@@ -251,7 +251,24 @@ async function addNewOptionType(req, res) {
   const optionType = req.body;
   console.log(optionType);
 
-  res.status(500).json({error: 'add new option not impliment'});
+  try {
+    const newOptionType = await Option_Type.create({name: optionType.optionType});
+    for (const option of optionType.options) {
+      await Option.create({
+        name: option.name,
+        option_type_id: newOptionType.id,
+        price: option.price,
+      });
+    }
+    res.status(201).json({
+      message: 'Option type created successfully',
+      // productId: newProduct.product_id,
+    });
+  } catch (error) {
+    console.error('Error creating option type:', error);
+    res.status(500).json({ error: 'Failed to create option type' });
+  }
+  // res.status(500).json({error: 'add new option not impliment'});
 }
 
 module.exports = {
