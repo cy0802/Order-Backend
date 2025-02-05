@@ -20,6 +20,7 @@ module.exports = {
       { name: 'customer2', password: passwd, phone: '0923456789', email: 'customer2@gmail.com', permission: "customer", createdAt: new Date(), updatedAt: new Date() },
       { name: 'clerk', password: passwd, phone: '0934567890', email: 'clerk@gmail.com', permission: "clerk", createdAt: new Date(), updatedAt: new Date() },
       { name: 'admin', password: passwd, phone: '0934567890', email: 'admin@gmail.com', permission: "admin", createdAt: new Date(), updatedAt: new Date() },
+      { name: 'sysadmin', password: passwd, phone: '0934567890', email: 'sysadmin@gmail.com', permission: "sysadmin", createdAt: new Date(), updatedAt: new Date() }
     ])
     await queryInterface.bulkInsert('Coupons', [
       { name: '單筆訂單九折', expire: new Date('2025-12-31'), type: 'percent_off', percent_off: 0.9, createdAt: new Date(), updatedAt: new Date() },

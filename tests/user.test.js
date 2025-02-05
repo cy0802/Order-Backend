@@ -1,6 +1,6 @@
 const request = require('supertest');
 const server = require('../index');
-const { refreshDB } = require('./util');
+const { refreshDB, createTenant } = require('./util');
 
 describe("user registration", () => {
   afterAll(() => {
@@ -8,7 +8,8 @@ describe("user registration", () => {
   });
 
   beforeAll(async () => {
-    refreshDB();
+    await refreshDB();
+    await createTenant();
   });
 
   const payload = {
@@ -21,6 +22,7 @@ describe("user registration", () => {
   it("should register a new user", async () => {
     const res = await request(server)
       .post('/api/register')
+      .set('Host', 'test_tenant.example.com')
       .send(payload);
     expect(res.statusCode).toEqual(201);
     expect(res.body).toMatchObject({
@@ -36,6 +38,7 @@ describe("user registration", () => {
   it("should not register a user with an existing email", async () => {
     const res = await request(server)
       .post('/api/register')
+      .set('Host', 'test_tenant.example.com')
       .send(payload);
     expect(res.statusCode).toEqual(400);
     expect(res.body).toMatchObject({ error: "Email already in use" });
@@ -48,7 +51,8 @@ describe("user login", () => {
   });
 
   beforeAll(async () => {
-    refreshDB();
+    await refreshDB();
+    await createTenant();
   });
 
   const payload = {
@@ -59,6 +63,7 @@ describe("user login", () => {
   it("should successfully login a user", async () => {
     const res = await request(server)
       .post('/api/login')
+      .set('Host', 'test_tenant.example.com')
       .send(payload);
     expect(res.statusCode).toEqual(200);
     expect(res.body).toMatchObject({
@@ -74,6 +79,7 @@ describe("user login", () => {
   it("should not login a user with invalid credentials", async () => {
     const res = await request(server)
       .post('/api/login')
+      .set('Host', 'test_tenant.example.com')
       .send({ email: "customer1@gmail.com", password: "wrongpassword" });
     expect(res.statusCode).toEqual(401);
     expect(res.body).toMatchObject({ error: "Invalid email or password" });

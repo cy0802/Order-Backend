@@ -1,12 +1,9 @@
-const db = require('../models');
+async function getProducts(req, res) {
+  const Product = req.db.Product;
+  const Category = req.db.Category;
+  const Option_Type = req.db.Option_Type;
+  const Option = req.db.Option;
 
-const Product = db.Product;
-const Category = db.Category;
-const Option_Type = db.Option_Type;
-const Option = db.Option;
-const Product_Option_Type = db.Product_Option_Type;
-
-async function getProducts(_, res) {
   try {
     const products = await Product.findAll({
       attributes: { exclude: ['createdAt', 'updatedAt', 'category_id'] },
@@ -68,26 +65,13 @@ async function getProducts(_, res) {
   }
 }
 
-// async function createProduct(req, res) {
-//   try {
-//     const name = req.body.name;
-//     const productExists = await Product.findOne({ where: { name } });
-//     if (productExists) {
-//       return res.status(400).json({ message: 'Product with the same name already exists' });
-//     }
-//     const description = req.body.description;
-//     const price = req.body.price;
-//     const category_id = req.body.category_id;
-//     // TODO: nested request?
-//     const product = await Product.create(req.body);
-//     res.status(201).json(product);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// }
-
 // merge from kitchen system
 async function getMenu(req, res) {
+  const Product = req.db.Product;
+  const Option_Type = req.db.Option_Type;
+  const Product_Option_Type = req.db.Product_Option_Type;
+  const Category = req.db.Category;
+
   try {
     const menu = await Category.findAll({
       include: [
@@ -116,6 +100,8 @@ async function getMenu(req, res) {
 }
 
 async function getOption(req, res) {
+  const Option_Type = req.db.Option_Type;
+
   console.log('require option type');
   try {
     const option = await Option_Type.findAll({
@@ -131,6 +117,10 @@ async function getOption(req, res) {
 }
 
 async function updateItem(req, res) {
+  const Product = req.db.Product;
+  const Product_Option_Type = req.db.Product_Option_Type;
+  const Option_Type = req.db.Option_Type;
+
   const {id} = req.params;
   console.log('update menu ', id);
   item = req.body;
@@ -201,6 +191,9 @@ async function updateItem(req, res) {
 }
 
 async function addNewProduct(req, res) {
+  const Product = req.db.Product;
+  const Product_Option_Type = req.db.Product_Option_Type;
+
   const product = req.body;
   console.log('addNewProduct: ');
   console.log(product);
@@ -232,6 +225,8 @@ async function addNewProduct(req, res) {
 }
 
 async function addNewCategory(req, res) {
+  const Category = req.db.Category;
+
   const category = req.body;
   console.log('add new category: ', category);
   try {
@@ -247,6 +242,9 @@ async function addNewCategory(req, res) {
 }
 
 async function addNewOptionType(req, res) {
+  const Option_Type = req.db.Option_Type;
+  const Option = req.db.Option;
+
   console.log("add new option type: ");
   const optionType = req.body;
   console.log(optionType);
@@ -273,7 +271,6 @@ async function addNewOptionType(req, res) {
 
 module.exports = {
   getProducts,
-  // createProduct
   getMenu,
   getOption,
   updateItem,

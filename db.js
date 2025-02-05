@@ -8,7 +8,6 @@ const basename = path.basename(__filename);
 const connections = {};
 
 const getTenantConnection = async (hostname) => {
-  console.log("getting tenant connection", hostname);
   if (!connections[hostname]) {
     connections[hostname] = {};
     const sequelize = new Sequelize(hostname, config.username, config.password, {
@@ -41,7 +40,6 @@ const getTenantConnection = async (hostname) => {
 
     try {
       await sequelize.authenticate();
-      console.log('Connection has been established successfully.');
     } catch (error) {
       console.error('Unable to connect to the database:', error);
     }

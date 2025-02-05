@@ -1,10 +1,11 @@
 const request = require('supertest');
 const server = require('../index');
-const { refreshDB } = require('./util');
+const { refreshDB, createTenant } = require('./util');
 
 describe("fetch all products", () => {
-  beforeAll(() => {
-    refreshDB();
+  beforeAll(async () => {
+    await refreshDB();
+    await createTenant();
   });
 
   afterAll(() => {
@@ -13,7 +14,8 @@ describe("fetch all products", () => {
 
   it("should fetch all products", async () => {
     const res = await request(server)
-      .get('/api/products');
+      .get('/api/products')
+      .set('Host', 'test_tenant.example.com');
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual(expect.arrayContaining([
       expect.objectContaining({
