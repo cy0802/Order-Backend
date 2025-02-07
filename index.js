@@ -5,6 +5,7 @@ const productController = require('./controllers/product');
 const orderController = require('./controllers/order');
 const userController = require('./controllers/user');
 const couponController = require('./controllers/coupon');
+const permissionController = require('./controllers/permission');
 const auth = require('./middleware/auth');
 const { checkAdmin, checkClerk } = require('./middleware/checkAdmin');
 require('dotenv').config();
@@ -41,6 +42,9 @@ app.put('/api/menu-management/add-new-option-type', auth, checkAdmin, productCon
 
 app.get('/api/charge-page', orderController.getChargePageOrders);
 app.post('/api/charge-page/confirm-charge', auth, checkClerk, orderController.confirmCharge);
+
+app.post('/api/permission-management/search-user', auth, checkAdmin, permissionController.searchUser);
+app.post('/api/permission-management/switch-permission', auth, checkAdmin, permissionController.switchPermission);
 
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
