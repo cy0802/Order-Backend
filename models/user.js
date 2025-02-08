@@ -46,7 +46,11 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     phone: DataTypes.STRING,
     email: DataTypes.STRING,
-    permission: DataTypes.STRING
+    permission: DataTypes.STRING,
+    isTerminated: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    }
   }, {
     sequelize,
     modelName: 'User',

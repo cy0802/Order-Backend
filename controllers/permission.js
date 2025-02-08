@@ -42,7 +42,27 @@ async function switchPermission(req, res) {
   }
 }
 
+async function terminateUser(req, res) {
+  console.log('terminate user ', req.body.id);
+  try {
+    const modifiedUser = await User.findByPk(req.body.id);
+    if(!modifiedUser) {
+      return res.status(404).json({error: 'user not found'});
+    }
+
+    modifiedUser.isTerminated = req.body.isTerminated;
+    await modifiedUser.save();
+
+    return res.status(200).json(modifiedUser);
+  }
+  catch (error) {
+    console.error('Error terminating user:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
 module.exports = {
   searchUser,
   switchPermission,
+  terminateUser,
 };

@@ -7,6 +7,9 @@ async function login(req, res) {
     if (!user || !(await user.validPassword(password))) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
+    else if (user.isTerminated) {  // 被停權的話也要擋下來
+      return res.status(403).json({error: 'terminated account'});
+    }
     const token = user.generateToken();
     const userWithoutPassword = removeUserPassword(user);
     res.json({ token, ...userWithoutPassword });

@@ -45,6 +45,7 @@ app.post('/api/charge-page/confirm-charge', auth, checkClerk, orderController.co
 
 app.post('/api/permission-management/search-user', auth, checkAdmin, permissionController.searchUser);
 app.post('/api/permission-management/switch-permission', auth, checkAdmin, permissionController.switchPermission);
+app.patch('/api/permission-management/terminate-user', auth, checkAdmin, permissionController.terminateUser);
 
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
