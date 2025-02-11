@@ -2,7 +2,13 @@ const { where } = require('sequelize');
 const db = require('../models');
 // const jwt = require('jsonwebtoken');
 
+const Order = db.Order;
+const Order_Product = db.Order_Product;
+const Product = db.Product;
+const Option = db.Option;
 const User = db.User;
+const User_Coupon = db.User_Coupon;
+const Coupon = db.Coupon;
 
 async function searchUser(req, res) {
   console.log("search user by: ", req.body);
@@ -61,8 +67,82 @@ async function terminateUser(req, res) {
   }
 }
 
+async function adminGetCoupons(req, res) {  // thank you ycy @@
+  console.log("fetching user coupons, user: ", req.body.id);
+  try {
+
+    const coupons = await User_Coupon.findAll({
+      where: { user_id: req.body.id },
+      attributes: ['id', 'used', 'order_id'],
+      include: [
+        {
+          model: Coupon,
+          attributes: { exclude: ['createdAt', 'updatedAt'] },
+        },
+      ],
+    });
+
+    res.status(200).json(coupons);
+    console.log(JSON.stringify(coupons, null, 2));
+
+  } catch (error) {
+    console.error('Error getting user coupons:', error);
+    res.status(500).json({ message: error.message });
+  }
+}
+
+async function adminGetHistory(req, res) {
+  try {
+
+    const orders = await Order.findAll({
+      where: {user_id: req.body.id},
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'permission'] },
+        },
+        {
+          model: User,
+          as: 'handler',
+          attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'permission'] },
+        },
+        {
+          model: Order_Product,
+          attributes: { exclude: ['createdAt', 'updatedAt'] },
+          include: [
+            {
+              model: Product,
+              attributes: { exclude: ['createdAt', 'updatedAt', 'description', 'available'] },
+            },
+            {
+              model: Option,
+              attributes: { exclude: ['createdAt', 'updatedAt', 'option_type_id'] },
+              through: { attributes: [] },
+              include: [
+                {
+                  model: db.Option_Type,
+                  attributes: { exclude: ['createdAt', 'updatedAt'] },
+                },
+              ],
+            }
+          ],
+        },
+      ],
+    });
+    res.status(200).send(orders);
+    console.log(JSON.stringify(orders, null, 2));
+  } catch (error) {
+    console.error("error fetching admin history: ", error);
+    res.status(500).send({ message: error.message });
+  }
+}
+
 module.exports = {
   searchUser,
   switchPermission,
   terminateUser,
+  adminGetCoupons,
+  adminGetHistory,
 };
