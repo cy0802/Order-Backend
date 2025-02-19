@@ -5,11 +5,12 @@ const productController = require('./controllers/product');
 const orderController = require('./controllers/order');
 const userController = require('./controllers/user');
 const couponController = require('./controllers/coupon');
+const permissionController = require('./controllers/permission');
 const auth = require('./middleware/auth');
 const { checkAdmin, checkClerk } = require('./middleware/checkAdmin');
 require('dotenv').config();
 const app = express();
-const port = 8000;
+const port = 8001;
 
 app.use(cors());
 app.use(bodyParder.json());
@@ -25,6 +26,9 @@ app.post('/api/register', userController.register);
 app.post('/api/login', userController.login);
 
 app.get('/api/coupons', auth, couponController.getCoupons);
+app.get('/api/coupons/get-coupon-types', auth, checkClerk, couponController.getCouponTypes);
+app.post('/api/coupons/search-customer', auth, checkClerk, couponController.searchCustomer);
+app.post('/api/coupons/distribute-coupon', auth, checkClerk, couponController.distributeCoupon);
 
 // merged from kitchen system
 // !!!!!!! checkAdmin middleware is modified to checkClerk !!!!!!!
@@ -41,6 +45,12 @@ app.put('/api/menu-management/add-new-option-type', auth, checkAdmin, productCon
 
 app.get('/api/charge-page', orderController.getChargePageOrders);
 app.post('/api/charge-page/confirm-charge', auth, checkClerk, orderController.confirmCharge);
+
+app.post('/api/permission-management/search-user', auth, checkAdmin, permissionController.searchUser);
+app.post('/api/permission-management/switch-permission', auth, checkAdmin, permissionController.switchPermission);
+app.patch('/api/permission-management/terminate-user', auth, checkAdmin, permissionController.terminateUser);
+app.post('/api/permission-management/admin-get-user-coupon', auth, checkAdmin, permissionController.adminGetCoupons);
+app.post('/api/permission-management/admin-get-user-history', auth, checkAdmin, permissionController.adminGetHistory);
 
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
