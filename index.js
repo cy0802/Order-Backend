@@ -10,7 +10,7 @@ const auth = require('./middleware/auth');
 const { checkAdmin, checkClerk } = require('./middleware/checkAdmin');
 require('dotenv').config();
 const app = express();
-const port = 8000;
+const port = 8001;
 
 app.use(cors());
 app.use(bodyParder.json());
@@ -26,6 +26,9 @@ app.post('/api/register', userController.register);
 app.post('/api/login', userController.login);
 
 app.get('/api/coupons', auth, couponController.getCoupons);
+app.get('/api/coupons/get-coupon-types', auth, checkClerk, couponController.getCouponTypes);
+app.post('/api/coupons/search-customer', auth, checkClerk, couponController.searchCustomer);
+app.post('/api/coupons/distribute-coupon', auth, checkClerk, couponController.distributeCoupon);
 
 // merged from kitchen system
 // !!!!!!! checkAdmin middleware is modified to checkClerk !!!!!!!
