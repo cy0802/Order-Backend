@@ -1,6 +1,6 @@
-const { User } = require('../models');
-
 async function login(req, res) {
+  const User = req.db.User;
+
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ where: { email } });
@@ -20,6 +20,8 @@ async function login(req, res) {
 }
 
 async function register(req, res) {
+  const User = req.db.User;
+
   const { email, password, name, phone } = req.body;
   const permission = "customer";
   try {

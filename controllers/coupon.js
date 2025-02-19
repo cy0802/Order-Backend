@@ -7,6 +7,8 @@ const User_Coupon = db.User_Coupon;
 const User = db.User;
 
 async function getCoupons(req, res) {
+  const User_Coupon = req.db.User_Coupon;
+  const Coupon = req.db.Coupon;
   try {
     const token = req.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

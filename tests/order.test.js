@@ -1,16 +1,17 @@
 const request = require('supertest');
 const server = require('../index');
-const { refreshDB, getClerkToken, getCustomerToken } = require('./util');
+const { refreshDB, getClerkToken, getCustomerToken, createTenant } = require('./util');
 const { toBeOneOf, toBeWithin } = require('jest-extended');
-const { Order, User_Coupon, Order_Product, Order_Product_Option } = require('../models');
+const { getTenantConnection } = require('../db');
 expect.extend({ toBeOneOf, toBeWithin });
 
 describe("get history order", () => {
   let customerToken;
   let clerkToken;
 
-  beforeAll(() => {
-    refreshDB();
+  beforeAll(async () => {
+    await refreshDB();
+    await createTenant();
     customerToken = getCustomerToken();
     clerkToken = getClerkToken();
   })
@@ -23,7 +24,8 @@ describe("get history order", () => {
   it("should get history order of customer", async () => {
     const res = await request(server)
       .get('/api/orders/history')
-      .set('Authorization', `Bearer ${customerToken}`);
+      .set('Authorization', `Bearer ${customerToken}`)
+      .set('Host', 'test_tenant.example.com');
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -76,7 +78,8 @@ describe("get history order", () => {
   it("should get all orders if user is clerk", async () => {
     const res = await request(server)
       .get('/api/orders/history')
-      .set('Authorization', `Bearer ${clerkToken}`);
+      .set('Authorization', `Bearer ${clerkToken}`)
+      .set('Host', 'test_tenant.example.com');
     expect(res.statusCode).toEqual(200);
     expect(res.body.length).toBeWithin(2, 3);
   });
@@ -96,14 +99,15 @@ describe("add an order", () => {
     option_ids: []
   }]
 
-  beforeAll(() => {
-    refreshDB();
+  beforeAll(async () => {
+    await refreshDB();
+    await createTenant();
     customerToken = getCustomerToken();
     clerkToken = getClerkToken();
   })
 
-  afterAll((done) => {
-    server.close(done);
+  afterAll(() => {
+    server.close();
   });
 
   it("should add an order from customer", async () => {
@@ -118,9 +122,16 @@ describe("add an order", () => {
     const res = await request(server)
       .post('/api/orders')
       .set('Authorization', `Bearer ${customerToken}`)
+      .set('Host', 'test_tenant.example.com')
       .send(payload);
     expect(res.statusCode).toEqual(201);
     expect(res.body).toEqual({message: "Order created successfully"});
+
+    const conn = await getTenantConnection('test_tenant');
+    const Order = conn.Order;
+    const Order_Product = conn.Order_Product;
+    const User_Coupon = conn.User_Coupon;
+    const Order_Product_Option = conn.Order_Product_Option;
 
     const order = await Order.findOne({ where: { table_id: 1 } });
     const orderedItems = await Order_Product.findAll({ where: { order_id: order.id } });
@@ -146,7 +157,8 @@ describe("add an order", () => {
   });
 
   it("should add an order from clerk", async () => {
-    refreshDB();
+    await refreshDB();
+    await createTenant();
     const payload = {
       table_id: 10,
       coupon_ids: [],
@@ -158,10 +170,16 @@ describe("add an order", () => {
     const res = await request(server)
       .post('/api/orders')
       .set('Authorization', `Bearer ${clerkToken}`)
+      .set('Host', 'test_tenant.example.com')
       .send(payload);
+
     expect(res.statusCode).toEqual(201);
     expect(res.body).toEqual({message: "Order created successfully"});
 
+    const conn = await getTenantConnection('test_tenant');
+    const Order = conn.Order;
+    const Order_Product = conn.Order_Product;
+    
     const order = await Order.findOne({ where: { table_id: 10 } });
     const orderedItems = await Order_Product.findAll({ where: { order_id: order.id } });
     expect(order).toBeTruthy();

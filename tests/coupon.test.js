@@ -1,6 +1,6 @@
 const request = require('supertest');
 const server = require('../index');
-const { refreshDB, getCustomerToken } = require('./util');
+const { refreshDB, getCustomerToken, createTenant } = require('./util');
 const { toBeOneOf } = require('jest-extended');
 
 expect.extend({ toBeOneOf })
@@ -8,8 +8,9 @@ expect.extend({ toBeOneOf })
 describe("fetch all coupons", () => {
   let token;
 
-  beforeAll(() => {
-    refreshDB();
+  beforeAll(async () => {
+    await refreshDB();
+    await createTenant();
     token = getCustomerToken();
   })
 
@@ -20,7 +21,8 @@ describe("fetch all coupons", () => {
   it("should fetch all coupons", async () => {
     const res = await request(server)
       .get('/api/coupons')
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${token}`)
+      .set('Host', 'test_tenant.example.com');
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -41,7 +43,8 @@ describe("fetch all coupons", () => {
 
   it("should not fetch coupons without tokens", async () => {
     const res = await request(server)
-      .get('/api/coupons');
+      .get('/api/coupons')
+      .set('Host', 'test_tenant.example.com');
     expect(res.statusCode).toEqual(401);
     expect(res.body).toMatchObject({ error: "Token is required" });
   });

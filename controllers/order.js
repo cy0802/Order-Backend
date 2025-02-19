@@ -1,24 +1,16 @@
-const db = require('../models');
-const jwt = require('jsonwebtoken');
-
-const Order = db.Order;
-const Order_Product = db.Order_Product;
-const Product = db.Product;
-const Option = db.Option;
-const User = db.User;
-const User_Coupon = db.User_Coupon;
-const Coupon = db.Coupon;
-const Option_Type = db.Option_Type;
-const Order_Product_Option = db.Order_Product_Option;
-
 async function getHistory(req, res) {
-  try {
-    const token = req.headers.authorization.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
-    const permission = decoded.permission;
+  const Order = req.db.Order;
+  const User = req.db.User;
+  const Order_Product = req.db.Order_Product;
+  const Product = req.db.Product;
+  const Option = req.db.Option;
+  const Option_Type = req.db.Option_Type;
 
-    const whereClause = (permission === 'admin' || permission === 'clerk') ? {} : { user_id: userId };
+  try {
+    // TODO: verify
+    const permission = req.user.permission;
+
+    const whereClause = (permission === 'admin' || permission === 'clerk') ? {} : { user_id: req.user.id };
     const orders = await Order.findAll({
       where: whereClause,
       order: [['createdAt', 'DESC']],
@@ -47,7 +39,7 @@ async function getHistory(req, res) {
               through: { attributes: [] },
               include: [
                 {
-                  model: db.Option_Type,
+                  model: Option_Type,
                   attributes: { exclude: ['createdAt', 'updatedAt'] },
                 },
               ],
@@ -63,6 +55,14 @@ async function getHistory(req, res) {
 }
 
 async function addOrder(req, res) {
+  const Order = req.db.Order;
+  const Order_Product = req.db.Order_Product;
+  const Order_Product_Option = req.db.Order_Product_Option;
+  const Option = req.db.Option;
+  const Product = req.db.Product;
+  const Coupon = req.db.Coupon;
+  const User_Coupon = req.db.User_Coupon;
+
   const { order_items, table_id, coupon_ids } = req.body;
   const user_id = req.body.user_id || null;
   const handler_id = req.body.handler_id || null;
@@ -144,6 +144,13 @@ async function addOrder(req, res) {
 
 // merged from kitchen system
 async function getAdminOrders(req, res) {
+  const Order_Product = req.db.Order_Product;
+  const Product = req.db.Product;
+  const Order = req.db.Order;
+  const User = req.db.User;
+  const Option = req.db.Option;
+  const Option_Type = req.db.Option_Type;
+
   console.log('req body: ', req.body);
   const selectedStates = req.body;
   // 轉成字串陣列，並把狀態true的過濾出來
@@ -229,6 +236,8 @@ async function getAdminOrders(req, res) {
 }
 
 async function updateOrderState(req, res) {
+  const Order_Product = req.db.Order_Product;
+
   console.log('req params: ', req.params);
   console.log('req body: ', req.body);
   const {id} = req.params;
@@ -252,6 +261,8 @@ async function updateOrderState(req, res) {
 }
 
 async function deleteOrder(req, res) {
+  const Order_Product = req.db.Order_Product;
+
   console.log('req params: ', req.params);
   const { id } = req.params;
 
@@ -272,6 +283,13 @@ async function deleteOrder(req, res) {
 }
 
 async function getChargePageOrders(req, res) {
+  const Order = req.db.Order;
+  const Order_Product = req.db.Order_Product;
+  const User = req.db.User;
+  const Product = req.db.Product;
+  const Option = req.db.Option;
+  const Option_Type = req.db.Option_Type;
+
   console.log("get charge page orders");
   try {
     const orders = await Order.findAll({
@@ -327,6 +345,8 @@ async function getChargePageOrders(req, res) {
 }
 
 async function confirmCharge(req, res) {
+  const Order = req.db.Order;
+
   console.log('confirm charge body: ', req.body);
   const rec = req.body;
   try {
