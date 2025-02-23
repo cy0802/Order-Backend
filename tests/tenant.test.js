@@ -14,8 +14,8 @@ describe("create tenant", () => {
 
   it("should create new tenant", async () => {
     const res = await request(server)
-      .post('/api/tenant')
-      .send({ name: '麻古茶坊', table_num: 4 });
+      .post('/api/tenant/register-tenant')
+      .send({ name: '麻古茶坊', password: 'hi', table_num: 4, email: 'boss@macutea.com' });
       // .set('Authorization', `Bearer ${token}`);
 
     expect(res.statusCode).toEqual(201);

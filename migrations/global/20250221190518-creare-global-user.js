@@ -1,13 +1,24 @@
 'use strict';
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Users', {
+  async up (queryInterface, Sequelize) {
+    await queryInterface.createTable('Global_Users', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
+      },
+      tenant_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'Tenants', // 確保 Tenants 表已存在
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
       },
       name: {
         type: Sequelize.STRING,
@@ -17,22 +28,13 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
-      phone: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
       email: {
         type: Sequelize.STRING,
+        unique: true,
         allowNull: false
-      },
-      permission: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        defaultValue: "customer"
       },
       isTerminated: {
         type: Sequelize.BOOLEAN,
-        allowNull: false,
         defaultValue: false
       },
       createdAt: {
@@ -45,7 +47,8 @@ module.exports = {
       }
     });
   },
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Users');
+
+  async down (queryInterface, Sequelize) {
+    await queryInterface.dropTable('Global_Users');
   }
 };

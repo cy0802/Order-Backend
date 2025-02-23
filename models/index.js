@@ -1,3 +1,4 @@
+// models/index.js
 'use strict';
 
 const path = require('path');
@@ -14,14 +15,15 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
-// only load global model
-const modelFiles = ['tenant.js'];
+// 先載入 Tenant
+const Tenant = require(path.join(__dirname, 'tenant.js'))(sequelize, Sequelize.DataTypes);
+db[Tenant.name] = Tenant;
 
-modelFiles.forEach(file => {
-  const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-  db[model.name] = model;
-});
+// 再載入 Global_User
+const Global_User = require(path.join(__dirname, 'global_user.js'))(sequelize, Sequelize.DataTypes);
+db[Global_User.name] = Global_User;
 
+// 設定關聯
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);

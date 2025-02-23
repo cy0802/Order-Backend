@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
 const { QueryTypes } = require('sequelize');
+const bcrypt = require('bcrypt');
+require('dotenv').config();
 
 const refreshDB = async () => {
   const conn = new Sequelize("tenant_db", config.username, config.password, {
@@ -15,7 +17,7 @@ const refreshDB = async () => {
     type: QueryTypes.SELECT,
   });
   for (const item of hostnames) {
-    await conn.query(`DROP DATABASE ${item.hostname};`);
+    await conn.query(`DROP DATABASE IF EXISTS ${item.hostname};`);
   }
   await conn.close();
   const connectionString = `${config.dialect}://${config.username}:${config.password}@${config.host}/tenant_db`;
@@ -50,12 +52,30 @@ const getSysAdminToken = () => {
 const createTenant = async () => {
   const conn = new Sequelize("tenant_db", config.username, config.password, {
     host: config.host,
+    port: config.port,
     dialect: config.dialect,
     logging: config.logging,
   });
   await conn.query("CREATE DATABASE test_tenant;");
-  await conn.query("INSERT INTO Tenants (hostname, createdAt, updatedAt) VALUES ('test_tenant', NOW(), NOW());");
-  const connectionString = `${config.dialect}://${config.username}:${config.password}@${config.host}/test_tenant`;
+  // await conn.query("INSERT INTO Tenants (hostname, createdAt, updatedAt) VALUES ('test_tenant', NOW(), NOW());");
+
+  const [tenantId, metadata] = await conn.query(
+    "INSERT INTO Tenants (hostname, createdAt, updatedAt) VALUES ('test_tenant', NOW(), NOW());"
+  );
+
+  // console.log("get tenantResult: ", tenantId);
+
+  const hashedPassword = await bcrypt.hash('hi', process.env.JWT_SECRET);
+
+  await conn.query(
+    `INSERT INTO Global_Users (tenant_id, name, email, password, isTerminated, createdAt, updatedAt) 
+      VALUES (:tenantId, 'boss', 'boss@test_tenant.com', :password, false, NOW(), NOW());`,
+    {
+      replacements: { tenantId, password: hashedPassword },
+      type: QueryTypes.INSERT,
+    }
+  );
+  const connectionString = `${config.dialect}://${config.username}:${config.password}@${config.host}:${config.port}/test_tenant`;
   execSync("npx sequelize-cli db:migrate --migrations-path migrations/tenants --url " + connectionString);
   execSync("npx sequelize-cli db:seed:all --url " + connectionString);
 }

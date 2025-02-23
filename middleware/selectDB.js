@@ -14,4 +14,15 @@ const selectDB = async (req, res, next) => {
   next();
 };
 
-module.exports = selectDB;
+const globalSelectDB = async (req, res, next) => {
+  const Tenant = db.Tenant;
+  const tenant = await Tenant.findByPk(req.user.tenant_id);
+  const conn = await tenantDB.getTenantConnection(tenant.hostname);
+  req.db = conn;
+  next();
+}
+
+module.exports = {
+  selectDB,
+  globalSelectDB
+};

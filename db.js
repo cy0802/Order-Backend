@@ -8,12 +8,14 @@ const basename = path.basename(__filename);
 const connections = {};
 
 const getTenantConnection = async (hostname) => {
+  console.log("get tenant connection, hostname: ", hostname);
   if (!connections[hostname]) {
     connections[hostname] = {};
     const sequelize = new Sequelize(hostname, config.username, config.password, {
       host: config.host,
       dialect: config.dialect,
       logging: config.logging,
+      port: config.port,
     });
     const modelFiles = fs
       .readdirSync(path.join(__dirname, 'models'))
@@ -24,7 +26,8 @@ const getTenantConnection = async (hostname) => {
           file.slice(-3) === '.js' &&
           file.indexOf('.test.js') === -1 &&
           file !== 'tenant.js' && 
-          file !== 'index.js'
+          file !== 'index.js' &&
+          file !== 'global_user.js'
         );
       });
     modelFiles.forEach(file => {
