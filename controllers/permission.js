@@ -1,17 +1,6 @@
-const { where } = require('sequelize');
-const db = require('../models');
-// const jwt = require('jsonwebtoken');
-
-const Order = db.Order;
-const Order_Product = db.Order_Product;
-const Product = db.Product;
-const Option = db.Option;
-const User = db.User;
-const User_Coupon = db.User_Coupon;
-const Coupon = db.Coupon;
-
 async function searchUser(req, res) {
-  console.log("search user by: ", req.body);
+  // console.log("search user by: ", req.body);
+  const User = req.db.User;
 
   // const emailClause = req.body.email ? {email: req.body.email} : {};
   // const nameClause = req.body.name ? {name: req.body.name} : {};
@@ -21,7 +10,7 @@ async function searchUser(req, res) {
 
   try {
     const canidate = await User.findAll({where: clause});
-    console.log(JSON.stringify(canidate, null, 2));
+    // console.log(JSON.stringify(canidate, null, 2));
     return res.json(canidate);
 
   } catch (error) {
@@ -31,7 +20,8 @@ async function searchUser(req, res) {
 }
 
 async function switchPermission(req, res) {
-  console.log('switch user ', req.body.id, ' to ', req.body.permission);
+  // console.log('switch user ', req.body.id, ' to ', req.body.permission);
+  const User = req.db.User;
   try {
     const user = await User.findByPk(req.body.id);
     if(!user) {
@@ -49,7 +39,8 @@ async function switchPermission(req, res) {
 }
 
 async function terminateUser(req, res) {
-  console.log('terminate user ', req.body.id);
+  // console.log('terminate user ', req.body.id);
+  const User = req.db.User;
   try {
     const modifiedUser = await User.findByPk(req.body.id);
     if(!modifiedUser) {
@@ -68,7 +59,9 @@ async function terminateUser(req, res) {
 }
 
 async function adminGetCoupons(req, res) {  // thank you ycy @@
-  console.log("fetching user coupons, user: ", req.body.id);
+  // console.log("fetching user coupons, user: ", req.body.id);
+  const User_Coupon = req.db.User_Coupon;
+  const Coupon = req.db.Coupon;
   try {
 
     const coupons = await User_Coupon.findAll({
@@ -92,8 +85,13 @@ async function adminGetCoupons(req, res) {  // thank you ycy @@
 }
 
 async function adminGetHistory(req, res) {
+  const Order = req.db.Order;
+  const User = req.db.User;
+  const Order_Product = req.db.Order_Product;
+  const Product = req.db.Product;
+  const Option = req.db.Option;
+  const Option_Type = req.db.Option_Type;
   try {
-
     const orders = await Order.findAll({
       where: {user_id: req.body.id},
       order: [['createdAt', 'DESC']],
@@ -122,7 +120,7 @@ async function adminGetHistory(req, res) {
               through: { attributes: [] },
               include: [
                 {
-                  model: db.Option_Type,
+                  model: Option_Type,
                   attributes: { exclude: ['createdAt', 'updatedAt'] },
                 },
               ],

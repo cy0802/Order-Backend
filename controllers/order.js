@@ -289,6 +289,7 @@ async function getChargePageOrders(req, res) {
   const Product = req.db.Product;
   const Option = req.db.Option;
   const Option_Type = req.db.Option_Type;
+  const Coupon = req.db.Coupon;
 
   console.log("get charge page orders");
   try {

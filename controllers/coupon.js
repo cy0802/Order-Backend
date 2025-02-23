@@ -2,10 +2,6 @@ const { where, fn, Op } = require('sequelize');
 const db = require('../models');
 const jwt = require('jsonwebtoken');
 
-const Coupon = db.Coupon;
-const User_Coupon = db.User_Coupon;
-const User = db.User;
-
 async function getCoupons(req, res) {
   const User_Coupon = req.db.User_Coupon;
   const Coupon = req.db.Coupon;
@@ -32,6 +28,7 @@ async function getCoupons(req, res) {
 }
 
 async function getCouponTypes(req, res) {
+  const Coupon = req.db.Coupon;
   try {
     const couponTypes = await Coupon.findAll({
       where: {expire:{ [Op.gt]: fn("NOW")} }
@@ -55,8 +52,7 @@ async function getCouponTypes(req, res) {
 }
 
 async function searchCustomer(req, res) {  // 只查沒被停權的customer
-  console.log("search customer by: ", req.body);
-
+  const User = req.db.User;
   // const emailClause = req.body.email ? {email: req.body.email} : {};
   // const nameClause = req.body.name ? {name: req.body.name} : {};
 
@@ -78,11 +74,11 @@ async function searchCustomer(req, res) {  // 只查沒被停權的customer
 }
 
 async function distributeCoupon(req, res) {
-  console.log("distribute coupon ", req.body.couponId, " to ", req.body.userIds);
+  const User_Coupon = req.db.User_Coupon;
 
   try {
     for(const userId of req.body.userIds) {
-      const newCoupon = await User_Coupon.create({user_id: userId, coupon_id: req.body.couponId});
+      await User_Coupon.create({user_id: userId, coupon_id: req.body.couponId});
     }
     res.status(200).json({ message: 'Coupons distributed successfully' });
   } catch (error) {
