@@ -3,7 +3,7 @@ const { Model } = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
+  class Global_User extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,15 +11,9 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      User.hasMany(models.Order, {
-        foreignKey: 'user_id'
-      });
-      User.hasMany(models.Order, {
-        foreignKey: 'handler_id'
-      });
-      User.hasMany(models.User_Coupon, {
-        foreignKey: 'user_id'
-      });
+      Global_User.belongsTo(models.Tenant, {
+        foreignKey: 'tenant_id'
+      });      
     }
     
     async validPassword(password) {
@@ -31,32 +25,30 @@ module.exports = (sequelize, DataTypes) => {
         id: this.id,
         name: this.name,
         email: this.email,
-        permission: this.permission
+        // permission: this.permission
       }, process.env.JWT_SECRET, { expiresIn: '3h' });
     }
   }
-  User.init({
+  Global_User.init({
     id: {
       allowNull: false,
       autoIncrement: true,
       primaryKey: true,
       type: DataTypes.INTEGER
     },
+    tenant_id: DataTypes.INTEGER,
     name: DataTypes.STRING,
     password: DataTypes.STRING,
-    phone: {
-      allowNull: true,
-      type: DataTypes.STRING,
-    },
+    // phone: DataTypes.STRING,
     email: DataTypes.STRING,
-    permission: DataTypes.STRING,
+    // permission: DataTypes.STRING,
     isTerminated: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     }
   }, {
     sequelize,
-    modelName: 'User',
+    modelName: 'Global_User',
     hooks: {
       beforeCreate: async (user) => {
         if (user.password) {
@@ -69,5 +61,5 @@ module.exports = (sequelize, DataTypes) => {
       },
     }
   });
-  return User;
+  return Global_User;
 };

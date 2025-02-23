@@ -8,9 +8,9 @@ const couponController = require('./controllers/coupon');
 const permissionController = require('./controllers/permission');
 const metadataController = require('./controllers/metadata');
 const tenantController = require('./controllers/tenant');
-const auth = require('./middleware/auth');
-const selectDB = require('./middleware/selectDB');
-const { checkAdmin, checkClerk, checkSysAdmin } = require('./middleware/checkAdmin');
+const { auth, sysAdminAuth } = require('./middleware/auth');
+const { selectDB, globalSelectDB } = require('./middleware/selectDB');
+const { checkAdmin, checkClerk } = require('./middleware/checkAdmin');
 require('dotenv').config();
 const app = express();
 const port = 8001;
@@ -28,16 +28,20 @@ app.get('/api/orders/history', selectDB, auth, orderController.getHistory);
 app.post('/api/register', selectDB, userController.register);
 app.post('/api/login', selectDB, userController.login);
 
-app.get('/api/coupons', auth, couponController.getCoupons);
-app.get('/api/coupons/get-coupon-types', auth, checkClerk, couponController.getCouponTypes);
-app.post('/api/coupons/search-customer', auth, checkClerk, couponController.searchCustomer);
-app.post('/api/coupons/distribute-coupon', auth, checkClerk, couponController.distributeCoupon);
+app.get('/api/coupons', selectDB, auth, couponController.getCoupons);
+app.get('/api/coupons/get-coupon-types', selectDB, auth, checkClerk, couponController.getCouponTypes);
+app.post('/api/coupons/search-customer', selectDB, auth, checkClerk, couponController.searchCustomer);
+app.post('/api/coupons/distribute-coupon', selectDB, auth, checkClerk, couponController.distributeCoupon);
 app.get('/api/coupons', selectDB, auth, couponController.getCoupons);
 
 app.get('/api/metadata', selectDB, metadataController.getMetadata);
 
 // TODO: checkSysAdmin middleware is not yet implemented
-app.post('/api/tenant', tenantController.createTenant);
+// if the user can pass athSysAdmin, then it must be sys admin
+app.post('/api/tenant/register-tenant', tenantController.registerTenant);
+app.post('/api/tenant/login-tenant', tenantController.loginTenant);
+app.post('/api/tenant/get-metadata', sysAdminAuth, globalSelectDB, tenantController.getMetadata);
+app.put('/api/tenant/update-metadata', sysAdminAuth, globalSelectDB, tenantController.updateMetadata);
 
 // merged from kitchen system
 // !!!!!!! checkAdmin middleware is modified to checkClerk !!!!!!!
@@ -55,11 +59,11 @@ app.put('/api/menu-management/add-new-option-type', selectDB, auth, checkAdmin, 
 app.get('/api/charge-page', selectDB, orderController.getChargePageOrders);
 app.post('/api/charge-page/confirm-charge', selectDB, auth, checkClerk, orderController.confirmCharge);
 
-app.post('/api/permission-management/search-user', auth, checkAdmin, permissionController.searchUser);
-app.post('/api/permission-management/switch-permission', auth, checkAdmin, permissionController.switchPermission);
-app.patch('/api/permission-management/terminate-user', auth, checkAdmin, permissionController.terminateUser);
-app.post('/api/permission-management/admin-get-user-coupon', auth, checkAdmin, permissionController.adminGetCoupons);
-app.post('/api/permission-management/admin-get-user-history', auth, checkAdmin, permissionController.adminGetHistory);
+app.post('/api/permission-management/search-user', selectDB, auth, checkAdmin, permissionController.searchUser);
+app.post('/api/permission-management/switch-permission', selectDB, auth, checkAdmin, permissionController.switchPermission);
+app.patch('/api/permission-management/terminate-user', selectDB, auth, checkAdmin, permissionController.terminateUser);
+app.post('/api/permission-management/admin-get-user-coupon', selectDB, auth, checkAdmin, permissionController.adminGetCoupons);
+app.post('/api/permission-management/admin-get-user-history', selectDB, auth, checkAdmin, permissionController.adminGetHistory);
 
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
