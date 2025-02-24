@@ -195,8 +195,8 @@ async function addNewProduct(req, res) {
   const Product_Option_Type = req.db.Product_Option_Type;
 
   const product = req.body;
-  console.log('addNewProduct: ');
-  console.log(product);
+  // console.log('addNewProduct: ');
+  // console.log(product);
   // return res.ststus(500).json({error: 'add new product is not implimented'});
 
   try {
@@ -228,7 +228,7 @@ async function addNewCategory(req, res) {
   const Category = req.db.Category;
 
   const category = req.body;
-  console.log('add new category: ', category);
+  // console.log('add new category: ', category);
   try {
     await Category.create({name: category.category});
     res.status(201).json({
@@ -245,9 +245,9 @@ async function addNewOptionType(req, res) {
   const Option_Type = req.db.Option_Type;
   const Option = req.db.Option;
 
-  console.log("add new option type: ");
+  // console.log("add new option type: ");
   const optionType = req.body;
-  console.log(optionType);
+  // console.log(optionType);
 
   try {
     const newOptionType = await Option_Type.create({name: optionType.optionType});

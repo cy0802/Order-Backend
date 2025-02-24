@@ -13,7 +13,7 @@ const { selectDB, globalSelectDB } = require('./middleware/selectDB');
 const { checkAdmin, checkClerk } = require('./middleware/checkAdmin');
 require('dotenv').config();
 const app = express();
-const port = 8001;
+const port = 8000;
 
 app.use(cors());
 app.use(bodyParder.json());
