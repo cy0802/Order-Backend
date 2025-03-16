@@ -15,6 +15,41 @@ require('dotenv').config();
 const app = express();
 const port = 8000;
 
+app.use((req, res, next) => {
+  const start = Date.now();
+  const timestamp = new Date().toISOString();
+  
+  // ======== Request Log ========
+  console.log(`\n[${timestamp}] [Request]`);
+  console.log(`[IP] ${req.ip}`);
+  console.log(`[Method] ${req.method}`);
+  console.log(`[URL] ${req.originalUrl}`);
+  console.log(`[Headers]`, JSON.stringify(req.headers, null, 2));
+  console.log(`[Body]`, JSON.stringify(req.body, null, 2));
+  console.log(`[Query]`, JSON.stringify(req.query, null, 2));
+  console.log(`[Params]`, JSON.stringify(req.params, null, 2));
+
+  // 儲存原始的 res.send 方法
+  const originalSend = res.send;
+
+  // ======== Response Log ========
+  res.send = function (body) {
+    const duration = Date.now() - start;
+    const resTimestamp = new Date().toISOString();
+    console.log(`\n[${resTimestamp}] [Response]`);
+    console.log(`[Status] ${res.statusCode}`);
+    console.log(`[Headers]`, JSON.stringify(res.getHeaders(), null, 2));
+    console.log(`[Body]`, body);
+    console.log(`[Duration] ${duration}ms\n`);
+
+    // 呼叫原本的 res.send 方法，確保回應正常送出
+    originalSend.call(this, body);
+  };
+
+  next();
+});
+
+
 app.use(cors());
 app.use(bodyParder.json());
 
