@@ -53,7 +53,7 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(bodyParder.json());
 
-app.get('/', (req, res) => { res.send('Hello World!');});
+app.get('/', (req, res) => { res.send('modify!');});
 
 app.get('/api/products', selectDB, productController.getProducts);
 
