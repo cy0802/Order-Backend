@@ -8,12 +8,13 @@ const couponController = require('./controllers/coupon');
 const permissionController = require('./controllers/permission');
 const metadataController = require('./controllers/metadata');
 const tenantController = require('./controllers/tenant');
+const chatController = require('./controllers/chat');
 const { auth, sysAdminAuth } = require('./middleware/auth');
 const { selectDB, globalSelectDB } = require('./middleware/selectDB');
 const { checkAdmin, checkClerk } = require('./middleware/checkAdmin');
 require('dotenv').config();
 const app = express();
-const port = 8000;
+const port = 8001;
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -99,6 +100,8 @@ app.post('/api/permission-management/switch-permission', selectDB, auth, checkAd
 app.patch('/api/permission-management/terminate-user', selectDB, auth, checkAdmin, permissionController.terminateUser);
 app.post('/api/permission-management/admin-get-user-coupon', selectDB, auth, checkAdmin, permissionController.adminGetCoupons);
 app.post('/api/permission-management/admin-get-user-history', selectDB, auth, checkAdmin, permissionController.adminGetHistory);
+
+app.post('/api/chat', selectDB, chatController.sendMessageToLex);
 
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
