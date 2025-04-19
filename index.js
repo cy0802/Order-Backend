@@ -1,5 +1,6 @@
 const express = require ('express');
 const cors = require('cors');
+const multer = require('multer');
 const bodyParder = require('body-parser');
 const productController = require('./controllers/product');
 const orderController = require('./controllers/order');
@@ -15,6 +16,8 @@ const { checkAdmin, checkClerk } = require('./middleware/checkAdmin');
 require('dotenv').config();
 const app = express();
 const port = 8000;
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -102,6 +105,7 @@ app.post('/api/permission-management/admin-get-user-coupon', selectDB, auth, che
 app.post('/api/permission-management/admin-get-user-history', selectDB, auth, checkAdmin, permissionController.adminGetHistory);
 
 app.post('/api/chat', selectDB, chatController.sendMessageToLex);
+app.post('/api/chat/voice', selectDB, upload.single('audio'), chatController.sendVoiceToLex);
 
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
