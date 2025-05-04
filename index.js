@@ -104,8 +104,8 @@ app.patch('/api/permission-management/terminate-user', selectDB, auth, checkAdmi
 app.post('/api/permission-management/admin-get-user-coupon', selectDB, auth, checkAdmin, permissionController.adminGetCoupons);
 app.post('/api/permission-management/admin-get-user-history', selectDB, auth, checkAdmin, permissionController.adminGetHistory);
 
-app.post('/api/chat', selectDB, chatController.sendMessageToLex);
-app.post('/api/chat/voice', selectDB, upload.single('audio'), chatController.sendVoiceToLex);
+app.post('/api/chat', selectDB, chatController.sendMessageToBot);
+app.post('/api/chat/voice', selectDB, upload.single('audio'), chatController.sendVoiceToBot);
 
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
