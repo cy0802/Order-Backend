@@ -1,93 +1,46 @@
-const AWS = require("aws-sdk");
+const { PollyClient, SynthesizeSpeechCommand } = require("@aws-sdk/client-polly");
+const { BedrockAgentRuntimeClient, InvokeFlowCommand } = require("@aws-sdk/client-bedrock-agent-runtime");
+const { TranscribeStreamingClient, StartStreamTranscriptionCommand } = require("@aws-sdk/client-transcribe-streaming");
 const ffmpeg = require('fluent-ffmpeg');
 const { PassThrough } = require('stream');
-// const fs = require('fs');
-const path = require('path');
-require('dotenv').config(); // 確保第一行載入
+const { log } = require("console");
+require('dotenv').config();
 
-// const AUDIO_DIR = path.join(__dirname, 'audio');
+const REGION = "us-east-1";
 
-// if (!fs.existsSync(AUDIO_DIR)) {
-//   fs.mkdirSync(AUDIO_DIR, { recursive: true });
-// }
-
-// 設定 AWS Lex
-AWS.config.update({
-    region: "us-east-1", // 替換成你的 Lex 所在區域
+const pollyClient = new PollyClient({ 
+  region: REGION,
+  credentials: {
     accessKeyId: process.env.accessKeyId,
     secretAccessKey: process.env.secretAccessKey,
+  },
+});
+const agentClient = new BedrockAgentRuntimeClient({
+  region: REGION, // 注意：Flow 建在哪個 region 就用哪個
+  credentials: {
+    accessKeyId: process.env.accessKeyId,
+    secretAccessKey: process.env.secretAccessKey,
+  },
+});
+const transcribeClient = new TranscribeStreamingClient({
+  region: REGION,
+  credentials: {
+    accessKeyId: process.env.accessKeyId,
+    secretAccessKey: process.env.secretAccessKey,
+  },
 });
 
-const lexRuntime = new AWS.LexRuntimeV2({
-  endpoint: 'runtime-v2-lex.us-east-1.amazonaws.com'
-});
+// 你自建的 Flow Id 跟 Model ARN
+// const FLOW_ID = process.env.BEDROCK_FLOW_ID;
+// const FLOW_MODEL_ARN = process.env.BEDROCK_FLOW_MODEL_ARN;
 
-const lexBotAliasMap = {
-    "test_tenant": "0CJNLTBJN9",
-    "macutea": "JWSFM8QASG"
-};
-
-async function chatWithBot(message, sessionId, hostname) {
-    const params = {
-        botId: "R7VF9S9KTZ",
-        botAliasId: lexBotAliasMap[hostname],
-        localeId: "en_US",
-        sessionId: sessionId,
-        text: message
-    };
-
-    try {
-        const response = await lexRuntime.recognizeText(params).promise();
-
-        // 處理多則訊息
-        // if (response.messages && response.messages.length > 0) {
-        //     // 將所有訊息串接成單一字串
-        //     const combinedMessages = response.messages
-        //         .map(msg => msg.content)
-        //         .join("\n");
-            
-        //     return combinedMessages;
-        // } else {
-        //     return "No response from bot";
-        // }
-        return response.messages;
-    } catch (error) {
-        // 僅寫入 log，不拋出錯誤
-        console.error("Lex API Error:", error);
-
-        // 回傳一個友善的訊息或空值
-        return "The chatbot is currently unavailable. Please try again later.";
-    }
-}
-
-
-async function sendMessageToLex(req, res) {
-    const hostname = req.hostname.split('.')[0];
-    console.log("user from ", hostname, "send to lex:");
-    const { message, sessionId } = req.body;
-    console.log(message);
-
-    try {
-        const response = await chatWithBot(message, sessionId, hostname);
-        console.log(JSON.stringify(response, null, 2));
-        res.json({
-            response,
-            sessionId: sessionId
-        });
-    } catch (error) {
-        res.status(500).json({ error: "Lex API Error" });
-    }
-}
-
-async function sendVoiceToLex(req, res) {
-  console.log("sendVoiceToLex");
+// 語音訊息處理
+async function sendVoiceToBot(req, res) {
   const hostname = req.hostname.split('.')[0];
 
   if (!req.file) {
     return res.status(400).send('No audio file uploaded.');
   }
-
-  console.log('file mimetype:', req.file.mimetype);
 
   if (req.file.mimetype !== 'audio/webm') {
     return res.status(400).send('Invalid audio format. Please upload a WebM file.');
@@ -95,68 +48,173 @@ async function sendVoiceToLex(req, res) {
 
   const sessionId = req.body.sessionId;
 
-  const pcmBuffer = await convertWebmToPcm(req.file.buffer);
-  const params = {
-    botId: "R7VF9S9KTZ",
-    botAliasId: lexBotAliasMap[hostname],
-    localeId: "en_US",
-    sessionId: sessionId,
-    requestContentType: 'audio/l16; rate=16000; channels=1',
-    responseContentType: 'audio/mpeg',
-    inputStream: pcmBuffer
-  };
+  try {
+    // 1. 轉換 WebM 為 PCM
+    const pcmBuffer = await convertWebmToPcm(req.file.buffer);
 
-  lexRuntime.recognizeUtterance(params, (err, data) => {
-    if (err) {
-      console.error("Error from Lex:", err);
-      return res.status(500).send('Error processing voice input');
-    }
+    // 2. 語音轉文字（Nova Sonic）
+    const text = await transcribeWithTranscribe(pcmBuffer);
 
-    // In AWS SDK v2, data.audioStream is already a Buffer
-    const audioBuffer = data.audioStream;
+    // 3. 丟到 Bedrock Flow
+    const reply = await callFlowWithText(text, sessionId, hostname);
 
-    // // generate a filename
-    // const filename = `lex-response-${Date.now()}.mp3`;
-    // const filepath = path.join(AUDIO_DIR, filename);
-
-    // // write the file locally
-    // fs.writeFile(filepath, audioBuffer, writeErr => {
-    //   if (writeErr) {
-    //     console.error("Failed to write audio file:", writeErr);
-    //     // but still send back the audio
-    //   } else {
-    //     console.log("Audio saved to:", filepath);
-    //   }
-    // });
+    // 4. 將回覆轉語音（Polly）
+    const audioBuffer = await textToSpeech(reply);
 
     res.set('Content-Type', 'audio/mpeg');
     res.send(audioBuffer);
+  } catch (err) {
+    console.error("Voice processing error:", err);
+    res.status(500).send('Error processing voice input');
+  }
+}
+
+// 文本訊息處理
+async function sendMessageToBot(req, res) {
+  const hostname = req.hostname.split('.')[0];
+  const { message, sessionId } = req.body;
+
+  try {
+    const reply = await callFlowWithText(message, sessionId, hostname);
+    res.json({ response: reply, sessionId });
+  } catch (err) {
+    console.error("Text processing error:", err);
+    res.status(500).json({ error: "Flow API Error" });
+  }
+}
+
+// 語音轉文字（Nova Sonic）
+async function transcribeWithTranscribe(pcmBuffer) {
+  const CHUNK_SIZE = 1024 * 4; // 16KB
+
+  const command = new StartStreamTranscriptionCommand({
+    LanguageCode: "en-US",
+    MediaEncoding: "pcm",
+    MediaSampleRateHertz: 16000,
+    AudioStream: (async function* () {
+      for (let i = 0; i < pcmBuffer.length; i += CHUNK_SIZE) {
+        const chunk = pcmBuffer.slice(i, i + CHUNK_SIZE);
+        yield { AudioEvent: { AudioChunk: chunk } };
+        await new Promise(resolve => setTimeout(resolve, 20)); // 模擬實時傳輸
+      }
+    })(),
+  });
+
+  let transcript = '';
+
+  try {
+    const response = await transcribeClient.send(command);
+    for await (const event of response.TranscriptResultStream) {
+      if (event.TranscriptEvent) {
+        const results = event.TranscriptEvent.Transcript.Results;
+        for (const result of results) {
+          if (!result.IsPartial && result.Alternatives.length > 0) {
+            transcript = result.Alternatives[0].Transcript;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Transcribe error:", err);
+    throw err;
+  }
+
+  console.log("transcript.tirm():", transcript.trim());
+  return transcript.trim();
+}
+
+// 呼叫 Flow
+async function callFlowWithText(text, sessionId, hostname) {
+  queryText = "I am from " + hostname + ", " + text;
+  const input = {
+    flowIdentifier: "VMSJ77E6MK",           // Flow ID
+    flowAliasIdentifier: "G9ANWOCQ8Y",      // Flow Alias
+    inputs: [
+      {
+        content: 
+        {
+          document: queryText,
+        },
+        nodeName: "FlowInputNode",
+        nodeOutputName: "document",
+      },
+    ],
+  };
+  const command = new InvokeFlowCommand(input);
+
+  const response = await agentClient.send(command);
+  // console.log("Response:", JSON.stringify(response, null, 2));
+  console.log("flow output: ", response);
+
+  let flowResponse = {};
+  for await (const chunkEvent of response.responseStream) {
+    const { flowOutputEvent, flowCompletionEvent } = chunkEvent;
+
+    if (flowOutputEvent) {
+      flowResponse = { ...flowResponse, ...flowOutputEvent };
+      // console.log("Flow output event:", flowOutputEvent);
+    } else if (flowCompletionEvent) {
+      flowResponse = { ...flowResponse, ...flowCompletionEvent };
+      // console.log("Flow completion event:", flowCompletionEvent);
+    }
+  }
+
+  console.log("flowResponse: ", flowResponse);
+  return flowResponse.content.document || "No response from bot";
+}
+
+// 文字轉語音（Polly）
+async function textToSpeech(text) {
+  const command = new SynthesizeSpeechCommand({
+    OutputFormat: "mp3",
+    Text: text,
+    VoiceId: "Matthew", // 可選其它 Polly 聲音
+    Engine: "neural",
+  });
+
+  const response = await pollyClient.send(command);
+  return await streamToBuffer(response.AudioStream);
+}
+
+// 工具方法
+function streamToString(stream) {
+  return new Promise((resolve, reject) => {
+    let data = "";
+    stream.on("data", chunk => (data += chunk));
+    stream.on("end", () => resolve(data));
+    stream.on("error", reject);
+  });
+}
+
+function streamToBuffer(stream) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on("data", chunk => chunks.push(chunk));
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+    stream.on("error", reject);
   });
 }
 
 function convertWebmToPcm(webmBuffer) {
   return new Promise((resolve, reject) => {
-    // 1) wrap the Buffer in a PassThrough stream
     const inputStream = new PassThrough();
     inputStream.end(webmBuffer);
 
     const pcmChunks = [];
     const command = ffmpeg(inputStream)
-      .inputFormat('webm')            // tell ffmpeg it’s WebM
-      .audioFrequency(16000)          // 16 kHz
-      .audioChannels(1)               // mono
-      .format('s16le')                // raw signed 16‑bit little‑endian
-      .on('error', err => {
-        console.error('FFmpeg error:', err);
-        reject(err);
-      })
-      .on('end', () => {
-        resolve(Buffer.concat(pcmChunks));
-      })
-      .pipe();                        // pipe stdout
+      .inputFormat('webm')
+      .audioFrequency(16000)
+      .audioChannels(1)
+      .format('s16le')
+      .on('error', err => reject(err))
+      .on('end', () => resolve(Buffer.concat(pcmChunks)))
+      .pipe();
 
-    // 2) collect the PCM data
     command.on('data', chunk => pcmChunks.push(chunk));
   });
 }
-module.exports = { sendMessageToLex, sendVoiceToLex };
+
+module.exports = {
+  sendMessageToBot,
+  sendVoiceToBot,
+};
