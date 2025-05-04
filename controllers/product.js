@@ -1,3 +1,8 @@
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const { v4: uuidv4 } = require('uuid');
+const mime = require('mime-types');
+
 async function getProducts(req, res) {
   const Product = req.db.Product;
   const Category = req.db.Category;
@@ -46,6 +51,7 @@ async function getProducts(req, res) {
         name: product.name,
         price: product.price,
         description: product.description,
+        image: product.image,
         options: product.Option_Types.map(optionType => ({
           id: optionType.id,
           name: optionType.name,
@@ -194,7 +200,26 @@ async function addNewProduct(req, res) {
   const Product = req.db.Product;
   const Product_Option_Type = req.db.Product_Option_Type;
 
+  const s3 = new S3Client({ 
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.accessKeyId,
+      secretAccessKey: process.env.secretAccessKey,
+    }
+  });
+  const BUCKET = process.env.S3_BUCKET;
+
   const product = req.body;
+  const img_name = req.body.image_name;
+
+  let key = '';
+  let contentType = '';
+  if (img_name) {
+    const ext  = img_name.split('.').pop();
+    const uuid = uuidv4();
+    key  = `${uuid}.${ext}`;
+    contentType = mime.lookup(ext) || 'binary/octet-stream';
+  }
   // console.log('addNewProduct: ');
   // console.log(product);
   // return res.ststus(500).json({error: 'add new product is not implimented'});
@@ -206,18 +231,34 @@ async function addNewProduct(req, res) {
       price: product.price,
       available: product.available,
       category_id: product.category,
+      image: key,
     });
-
-    for(const option_type of product.options) {
-      await Product_Option_Type.create({
-        product_id: newProduct.id,
-        option_type_id: option_type,
-      });
-      res.status(201).json({
-        message: 'Product created successfully',
-        productId: newProduct.product_id,
-      });
+    if (product.options) {
+      for(const option_type of product.options) {
+        await Product_Option_Type.create({
+          product_id: newProduct.id,
+          option_type_id: option_type,
+        });
+      }
     }
+    let uploadUrl = '';
+    if (img_name) {
+      if (!BUCKET) {
+        throw new Error('S3_BUCKET environment variable is not set');
+      }
+      const command = new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: key,
+        ContentType: contentType,
+      });
+      uploadUrl = await getSignedUrl(s3, command, { expiresIn: 60 });
+    }
+
+    res.status(201).json({
+      message: 'Product created successfully',
+      productId: newProduct.product_id,
+      imageUploadUrl: uploadUrl,
+    });
   } catch (error) {
     console.error('Error creating product:', error);
     res.status(500).json({ error: 'Failed to create product' });
