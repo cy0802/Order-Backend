@@ -2,6 +2,7 @@ const { PollyClient, SynthesizeSpeechCommand } = require("@aws-sdk/client-polly"
 const { BedrockAgentRuntimeClient, InvokeFlowCommand } = require("@aws-sdk/client-bedrock-agent-runtime");
 const { TranscribeStreamingClient, StartStreamTranscriptionCommand } = require("@aws-sdk/client-transcribe-streaming");
 const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
 const { PassThrough } = require('stream');
 const { log } = require("console");
 require('dotenv').config();
